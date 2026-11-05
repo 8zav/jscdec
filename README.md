@@ -2,6 +2,9 @@
 
 Pure-JavaScript decompiler for **Bytenode / V8 `SerializedCodeData` (`.jsc`)** files. Reconstructs full, readable JavaScript source code directly from V8 Ignition bytecode snapshots without requiring a custom C++ V8 build (`depot_tools` / `ninja`).
 
+> 🌐 **Web Decompiler (No Installation Required):** [**https://jsc-decompiler.vercel.app**](https://jsc-decompiler.vercel.app)  
+> *Drop any `.jsc` file directly in your browser — 100% client-side, nothing leaves your machine.*
+
 ---
 
 ## Features
