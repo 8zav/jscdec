@@ -1,11 +1,11 @@
 'use strict';
-const fs = require('fs'), path = require('path'), os = require('os');
+const path = require('path');
 const { spawnSync } = require('child_process');
 
 const key = (r) => r.k === 'ro' ? `ro:${r.a}:${r.b}` : `root:${r.a}`;
 
-function run(exe, args, env) {
-  const r = spawnSync(exe, args, { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', ...env }, encoding: 'utf8', maxBuffer: 1 << 28 });
+function run(exe, args, input) {
+  const r = spawnSync(exe, args, { input, env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, encoding: 'utf8', maxBuffer: 1 << 28 });
   return (r.stdout || '') + (r.stderr && /abort|Fatal/i.test(r.stderr) ? '\nSTDERR:' + r.stderr : '');
 }
 
@@ -23,11 +23,8 @@ function classify(line) {
 
 function resolve(exe, template, refs) {
   const uniq = [...new Map(refs.map(r => [key(r), r])).values()];
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jscref-'));
   const child = path.join(__dirname, 'oracle-child.js');
-  const f1 = path.join(tmp, 'r1.json');
-  fs.writeFileSync(f1, JSON.stringify(uniq));
-  const out1 = run(exe, ['--allow-natives-syntax', child, template, f1, 'classify']);
+  const out1 = run(exe, ['--allow-natives-syntax', child, template, 'classify'], JSON.stringify(uniq));
   const res = new Map();
   const lines = out1.split(/\r?\n/);
   for (const ln of lines) {
@@ -37,15 +34,12 @@ function resolve(exe, template, refs) {
   uniq.forEach(r => { if (!res.has(key(r))) res.set(key(r), { type: 'unknown' }); });
   const strs = uniq.filter(r => res.get(key(r)).type === 'string').map(r => ({ ...r, s: 1 }));
   if (strs.length) {
-    const f2 = path.join(tmp, 'r2.json');
-    fs.writeFileSync(f2, JSON.stringify(strs));
-    const out2 = run(exe, [path.join(__dirname, 'oracle-child.js'), template, f2, 'string']);
+    const out2 = run(exe, [child, template, 'string'], JSON.stringify(strs));
     for (const ln of out2.split(/\r?\n/)) {
       const m = ln.match(/^@@(\d+) (.*)$/);
       if (m) res.get(key(strs[+m[1]])).value = JSON.parse(m[2]);
     }
   }
-  fs.rmSync(tmp, { recursive: true, force: true });
   return res;
 }
 

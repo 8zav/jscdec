@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs'), vm = require('vm');
-const [tpl, refsFile, mode] = process.argv.slice(2);
-const refs = JSON.parse(fs.readFileSync(refsFile, 'utf8'));
+const [tpl, mode] = process.argv.slice(2);
+const refs = JSON.parse(fs.readFileSync(0, 'utf8'));
 const dummy = new vm.Script('x').createCachedData();
 const base = Buffer.from(fs.readFileSync(tpl));
 dummy.copy(base, 4, 4, 8);
