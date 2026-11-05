@@ -53,16 +53,22 @@ node bin/jscdec.js path/to/file.jsc -o output.js
 node bin/jscdec.js path/to/build-stage -o out/
 ```
 
-### 3. Specify the target Electron / Node runtime (for `RO_SPACE` string resolution)
-When decompiling 4-byte pointer-compressed Electron `.jsc` files, pass the target application's `electron.exe` (or set `JSC_RUNTIME`) so the oracle can resolve built-in read-only strings with 100% accuracy:
+### 3. Automatic Electron Runtime Detection (`RO_SPACE` Oracle)
+`jscdec` comes with a pre-built V8 12.8 Read-Only heap table (`templates/ro-v12.8.json`), so most Electron 32 `.jsc` files decompile instantly without needing an external binary.
+
+When a `.jsc` file references custom/unindexed `RO_SPACE` constants, `jscdec` **automatically locates the Electron binary** in this order:
+1. Explicit `--runtime <path/to/electron.exe>` CLI flag or `JSC_RUNTIME` environment variable.
+2. `bin/electron.exe` or `tools/electron.exe` inside this repository.
+3. Auto-discovery from the target `.jsc` directory (walks up parent folders looking for `node_modules/electron/dist/electron.exe` or the packaged Electron app `.exe` next to `icudtl.dat` / `chrome_100_percent.pak`).
+4. Local `node_modules/electron/dist/electron.exe` (if installed via `npm i -D electron@32`).
+
 ```bash
+# Auto-detects runtime automatically, or specify manually:
 node bin/jscdec.js path/to/build-stage -o out/ --runtime "path/to/electron.exe"
 ```
-Or via environment variable:
-```powershell
-$env:JSC_RUNTIME = "C:\path\to\electron.exe"
-node bin/jscdec.js path/to/build-stage -o out/
-```
+
+> **Security Note on `electron.exe`:**
+> If you place an `electron.exe` inside `bin/` or `tools/` (or download one from a release), you can verify its authenticity against the official [Electron GitHub Releases](https://github.com/electron/electron/releases) (`SHASUMS256.txt`) or simply install the official binary yourself via `npm i -D electron@32.3.3` instead of using a pre-bundled `.exe`.
 
 ---
 
