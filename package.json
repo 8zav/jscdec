@@ -1,0 +1,26 @@
+{
+  "name": "jscdec",
+  "version": "1.0.0",
+  "description": "V8 / Bytenode / Electron .jsc bytecode decompiler to clean JavaScript",
+  "main": "src/index.js",
+  "bin": {
+    "jscdec": "./bin/jscdec.js"
+  },
+  "scripts": {
+    "decompile": "node bin/jscdec.js"
+  },
+  "keywords": [
+    "v8",
+    "bytenode",
+    "jsc",
+    "decompiler",
+    "electron",
+    "nodejs",
+    "bytecode",
+    "reverse-engineering"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,1707 @@
+[
+ {
+  "code": 0,
+  "name": "Wide",
+  "ops": [],
+  "use": "kNone"
+ },
+ {
+  "code": 1,
+  "name": "ExtraWide",
+  "ops": [],
+  "use": "kNone"
+ },
+ {
+  "code": 2,
+  "name": "DebugBreakWide",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 3,
+  "name": "DebugBreakExtraWide",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 4,
+  "name": "DebugBreak0",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 5,
+  "name": "DebugBreak1",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 6,
+  "name": "DebugBreak2",
+  "ops": [
+   "kReg",
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 7,
+  "name": "DebugBreak3",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 8,
+  "name": "DebugBreak4",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kReg",
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 9,
+  "name": "DebugBreak5",
+  "ops": [
+   "kRuntimeId",
+   "kReg",
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 10,
+  "name": "DebugBreak6",
+  "ops": [
+   "kRuntimeId",
+   "kReg",
+   "kReg",
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 11,
+  "name": "Ldar",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 12,
+  "name": "LdaZero",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 13,
+  "name": "LdaSmi",
+  "ops": [
+   "kImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 14,
+  "name": "LdaUndefined",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 15,
+  "name": "LdaNull",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 16,
+  "name": "LdaTheHole",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 17,
+  "name": "LdaTrue",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 18,
+  "name": "LdaFalse",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 19,
+  "name": "LdaConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 20,
+  "name": "LdaContextSlot",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 21,
+  "name": "LdaImmutableContextSlot",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 22,
+  "name": "LdaCurrentContextSlot",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 23,
+  "name": "LdaImmutableCurrentContextSlot",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 24,
+  "name": "Star",
+  "ops": [
+   "kRegOut"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 25,
+  "name": "Mov",
+  "ops": [
+   "kReg",
+   "kRegOut"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 26,
+  "name": "PushContext",
+  "ops": [
+   "kRegOut"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 27,
+  "name": "PopContext",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 28,
+  "name": "TestReferenceEqual",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 29,
+  "name": "TestUndetectable",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 30,
+  "name": "TestNull",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 31,
+  "name": "TestUndefined",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 32,
+  "name": "TestTypeOf",
+  "ops": [
+   "kFlag8"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 33,
+  "name": "LdaGlobal",
+  "ops": [
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 34,
+  "name": "LdaGlobalInsideTypeof",
+  "ops": [
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 35,
+  "name": "StaGlobal",
+  "ops": [
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 36,
+  "name": "StaContextSlot",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 37,
+  "name": "StaCurrentContextSlot",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 38,
+  "name": "StaScriptContextSlot",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 39,
+  "name": "StaCurrentScriptContextSlot",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 40,
+  "name": "LdaLookupSlot",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 41,
+  "name": "LdaLookupContextSlot",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 42,
+  "name": "LdaLookupGlobalSlot",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 43,
+  "name": "LdaLookupSlotInsideTypeof",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 44,
+  "name": "LdaLookupContextSlotInsideTypeof",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 45,
+  "name": "LdaLookupGlobalSlotInsideTypeof",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 46,
+  "name": "StaLookupSlot",
+  "ops": [
+   "kIdx",
+   "kFlag8"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 47,
+  "name": "GetNamedProperty",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 48,
+  "name": "GetNamedPropertyFromSuper",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 49,
+  "name": "GetKeyedProperty",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 50,
+  "name": "GetEnumeratedKeyedProperty",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 51,
+  "name": "LdaModuleVariable",
+  "ops": [
+   "kImm",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 52,
+  "name": "StaModuleVariable",
+  "ops": [
+   "kImm",
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 53,
+  "name": "SetNamedProperty",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 54,
+  "name": "DefineNamedOwnProperty",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 55,
+  "name": "SetKeyedProperty",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 56,
+  "name": "DefineKeyedOwnProperty",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kFlag8",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 57,
+  "name": "StaInArrayLiteral",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 58,
+  "name": "DefineKeyedOwnPropertyInLiteral",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kFlag8",
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 59,
+  "name": "Add",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 60,
+  "name": "Sub",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 61,
+  "name": "Mul",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 62,
+  "name": "Div",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 63,
+  "name": "Mod",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 64,
+  "name": "Exp",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 65,
+  "name": "BitwiseOr",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 66,
+  "name": "BitwiseXor",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 67,
+  "name": "BitwiseAnd",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 68,
+  "name": "ShiftLeft",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 69,
+  "name": "ShiftRight",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 70,
+  "name": "ShiftRightLogical",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 71,
+  "name": "AddSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 72,
+  "name": "SubSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 73,
+  "name": "MulSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 74,
+  "name": "DivSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 75,
+  "name": "ModSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 76,
+  "name": "ExpSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 77,
+  "name": "BitwiseOrSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 78,
+  "name": "BitwiseXorSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 79,
+  "name": "BitwiseAndSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 80,
+  "name": "ShiftLeftSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 81,
+  "name": "ShiftRightSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 82,
+  "name": "ShiftRightLogicalSmi",
+  "ops": [
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 83,
+  "name": "Inc",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 84,
+  "name": "Dec",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 85,
+  "name": "Negate",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 86,
+  "name": "BitwiseNot",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 87,
+  "name": "ToBooleanLogicalNot",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 88,
+  "name": "LogicalNot",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 89,
+  "name": "TypeOf",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 90,
+  "name": "DeletePropertyStrict",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 91,
+  "name": "DeletePropertySloppy",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 92,
+  "name": "GetSuperConstructor",
+  "ops": [
+   "kRegOut"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 93,
+  "name": "FindNonDefaultConstructorOrConstruct",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kRegOutPair"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 94,
+  "name": "CallAnyReceiver",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 95,
+  "name": "CallProperty",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 96,
+  "name": "CallProperty0",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 97,
+  "name": "CallProperty1",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 98,
+  "name": "CallProperty2",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 99,
+  "name": "CallUndefinedReceiver",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 100,
+  "name": "CallUndefinedReceiver0",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 101,
+  "name": "CallUndefinedReceiver1",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 102,
+  "name": "CallUndefinedReceiver2",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 103,
+  "name": "CallWithSpread",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 104,
+  "name": "CallRuntime",
+  "ops": [
+   "kRuntimeId",
+   "kRegList",
+   "kRegCount"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 105,
+  "name": "CallRuntimeForPair",
+  "ops": [
+   "kRuntimeId",
+   "kRegList",
+   "kRegCount",
+   "kRegOutPair"
+  ],
+  "use": "kClobberAccumulator"
+ },
+ {
+  "code": 106,
+  "name": "CallJSRuntime",
+  "ops": [
+   "kNativeContextIndex",
+   "kRegList",
+   "kRegCount"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 107,
+  "name": "InvokeIntrinsic",
+  "ops": [
+   "kIntrinsicId",
+   "kRegList",
+   "kRegCount"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 108,
+  "name": "Construct",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 109,
+  "name": "ConstructWithSpread",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 110,
+  "name": "ConstructForwardAllArgs",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 111,
+  "name": "TestEqual",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 112,
+  "name": "TestEqualStrict",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 113,
+  "name": "TestLessThan",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 114,
+  "name": "TestGreaterThan",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 115,
+  "name": "TestLessThanOrEqual",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 116,
+  "name": "TestGreaterThanOrEqual",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 117,
+  "name": "TestInstanceOf",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 118,
+  "name": "TestIn",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 119,
+  "name": "ToName",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 120,
+  "name": "ToNumber",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 121,
+  "name": "ToNumeric",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 122,
+  "name": "ToObject",
+  "ops": [
+   "kRegOut"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 123,
+  "name": "ToString",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 124,
+  "name": "ToBoolean",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 125,
+  "name": "CreateRegExpLiteral",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kFlag16"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 126,
+  "name": "CreateArrayLiteral",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kFlag8"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 127,
+  "name": "CreateArrayFromIterable",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 128,
+  "name": "CreateEmptyArrayLiteral",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 129,
+  "name": "CreateObjectLiteral",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kFlag8"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 130,
+  "name": "CreateEmptyObjectLiteral",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 131,
+  "name": "CloneObject",
+  "ops": [
+   "kReg",
+   "kFlag8",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 132,
+  "name": "GetTemplateObject",
+  "ops": [
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 133,
+  "name": "CreateClosure",
+  "ops": [
+   "kIdx",
+   "kIdx",
+   "kFlag8"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 134,
+  "name": "CreateBlockContext",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 135,
+  "name": "CreateCatchContext",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 136,
+  "name": "CreateFunctionContext",
+  "ops": [
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 137,
+  "name": "CreateEvalContext",
+  "ops": [
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 138,
+  "name": "CreateWithContext",
+  "ops": [
+   "kReg",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 139,
+  "name": "CreateMappedArguments",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 140,
+  "name": "CreateUnmappedArguments",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 141,
+  "name": "CreateRestParameter",
+  "ops": [],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 142,
+  "name": "JumpLoop",
+  "ops": [
+   "kUImm",
+   "kImm",
+   "kIdx"
+  ],
+  "use": "kClobberAccumulator"
+ },
+ {
+  "code": 143,
+  "name": "Jump",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 144,
+  "name": "JumpConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 145,
+  "name": "JumpIfNullConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 146,
+  "name": "JumpIfNotNullConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 147,
+  "name": "JumpIfUndefinedConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 148,
+  "name": "JumpIfNotUndefinedConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 149,
+  "name": "JumpIfUndefinedOrNullConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 150,
+  "name": "JumpIfTrueConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 151,
+  "name": "JumpIfFalseConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 152,
+  "name": "JumpIfJSReceiverConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 153,
+  "name": "JumpIfForInDoneConstant",
+  "ops": [
+   "kIdx",
+   "kReg",
+   "kReg"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 154,
+  "name": "JumpIfToBooleanTrueConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 155,
+  "name": "JumpIfToBooleanFalseConstant",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 156,
+  "name": "JumpIfToBooleanTrue",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 157,
+  "name": "JumpIfToBooleanFalse",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 158,
+  "name": "JumpIfTrue",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 159,
+  "name": "JumpIfFalse",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 160,
+  "name": "JumpIfNull",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 161,
+  "name": "JumpIfNotNull",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 162,
+  "name": "JumpIfUndefined",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 163,
+  "name": "JumpIfNotUndefined",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 164,
+  "name": "JumpIfUndefinedOrNull",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 165,
+  "name": "JumpIfJSReceiver",
+  "ops": [
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 166,
+  "name": "JumpIfForInDone",
+  "ops": [
+   "kUImm",
+   "kReg",
+   "kReg"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 167,
+  "name": "SwitchOnSmiNoFeedback",
+  "ops": [
+   "kIdx",
+   "kUImm",
+   "kImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 168,
+  "name": "ForInEnumerate",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 169,
+  "name": "ForInPrepare",
+  "ops": [
+   "kRegOutTriple",
+   "kIdx"
+  ],
+  "use": "kReadAndClobberAccumulator"
+ },
+ {
+  "code": 170,
+  "name": "ForInNext",
+  "ops": [
+   "kReg",
+   "kReg",
+   "kRegPair",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 171,
+  "name": "ForInStep",
+  "ops": [
+   "kRegInOut"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 172,
+  "name": "SetPendingMessage",
+  "ops": [],
+  "use": "kReadWriteAccumulator"
+ },
+ {
+  "code": 173,
+  "name": "Throw",
+  "ops": [],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 174,
+  "name": "ReThrow",
+  "ops": [],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 175,
+  "name": "Return",
+  "ops": [],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 176,
+  "name": "ThrowReferenceErrorIfHole",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 177,
+  "name": "ThrowSuperNotCalledIfHole",
+  "ops": [],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 178,
+  "name": "ThrowSuperAlreadyCalledIfNotHole",
+  "ops": [],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 179,
+  "name": "ThrowIfNotSuperConstructor",
+  "ops": [
+   "kReg"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 180,
+  "name": "SwitchOnGeneratorState",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kUImm"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 181,
+  "name": "SuspendGenerator",
+  "ops": [
+   "kReg",
+   "kRegList",
+   "kRegCount",
+   "kUImm"
+  ],
+  "use": "kReadAccumulator"
+ },
+ {
+  "code": 182,
+  "name": "ResumeGenerator",
+  "ops": [
+   "kReg",
+   "kRegOutList",
+   "kRegCount"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 183,
+  "name": "GetIterator",
+  "ops": [
+   "kReg",
+   "kIdx",
+   "kIdx"
+  ],
+  "use": "kWriteAccumulator"
+ },
+ {
+  "code": 184,
+  "name": "Debugger",
+  "ops": [],
+  "use": "kClobberAccumulator"
+ },
+ {
+  "code": 185,
+  "name": "IncBlockCounter",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 186,
+  "name": "Abort",
+  "ops": [
+   "kIdx"
+  ],
+  "use": "kNone"
+ },
+ {
+  "code": 187,
+  "name": "Star15",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 188,
+  "name": "Star14",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 189,
+  "name": "Star13",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 190,
+  "name": "Star12",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 191,
+  "name": "Star11",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 192,
+  "name": "Star10",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 193,
+  "name": "Star9",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 194,
+  "name": "Star8",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 195,
+  "name": "Star7",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 196,
+  "name": "Star6",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 197,
+  "name": "Star5",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 198,
+  "name": "Star4",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 199,
+  "name": "Star3",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 200,
+  "name": "Star2",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 201,
+  "name": "Star1",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 202,
+  "name": "Star0",
+  "ops": [],
+  "use": "kReadAccumulatorWriteShortStar"
+ },
+ {
+  "code": 203,
+  "name": "Illegal",
+  "ops": [],
+  "use": "kNone"
+ }
+]

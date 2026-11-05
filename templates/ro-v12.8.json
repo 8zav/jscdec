@@ -1,0 +1,807 @@
+{
+  "root:839": {
+    "type": "Other",
+    "dbg": "0x01f200000011 <Other heap object (INTERNALIZED_TWO_BYTE_STRING_TYPE)>"
+  },
+  "root:472": {
+    "type": "string",
+    "dbg": "0x01b800004fc5 <String[3]: #Map>",
+    "value": "Map"
+  },
+  "ro:2:32112": {
+    "type": "string",
+    "dbg": "0x02e6001c7d71 <String[4]: #stop>",
+    "value": "stop"
+  },
+  "ro:0:154264": {
+    "type": "string",
+    "dbg": "0x01f200025a99 <String[7]: #exports>",
+    "value": "exports"
+  },
+  "root:9": {
+    "type": "string",
+    "dbg": "0x01f2000000a1 <String[0]: #>",
+    "value": ""
+  },
+  "root:4": {
+    "type": "undefined",
+    "dbg": "0x01f200000069 <undefined>"
+  },
+  "root:526": {
+    "type": "string",
+    "dbg": "0x01f20000543d <String[7]: #Promise>",
+    "value": "Promise"
+  },
+  "root:746": {
+    "type": "string",
+    "dbg": "0x01f200006119 <String[7]: #resolve>",
+    "value": "resolve"
+  },
+  "root:7": {
+    "type": "true",
+    "dbg": "0x01f2000000c9 <true>"
+  },
+  "ro:0:145616": {
+    "type": "string",
+    "dbg": "0x01f2000238d1 <String[5]: #split>",
+    "value": "split"
+  },
+  "root:745": {
+    "type": "string",
+    "dbg": "0x02e600006109 <String[4]: #next>",
+    "value": "next"
+  },
+  "root:378": {
+    "type": "string",
+    "dbg": "0x02e600004751 <String[4]: #done>",
+    "value": "done"
+  },
+  "root:172": {
+    "type": "string",
+    "dbg": "0x02e600000e2d <String[5]: #value>",
+    "value": "value"
+  },
+  "ro:0:145428": {
+    "type": "string",
+    "dbg": "0x025400023815 <String[5]: #match>",
+    "value": "match"
+  },
+  "ro:0:144292": {
+    "type": "string",
+    "dbg": "0x02e6000233a5 <String[4]: #push>",
+    "value": "push"
+  },
+  "root:544": {
+    "type": "string",
+    "dbg": "0x02e6000055d1 <String[6]: #return>",
+    "value": "return"
+  },
+  "root:29": {
+    "type": "FixedArray",
+    "dbg": "0x01f200000725 <FixedArray[0]>"
+  },
+  "root:138": {
+    "type": "Other",
+    "dbg": "0x01f200006229 <Other heap object (FEEDBACK_METADATA_TYPE)>"
+  },
+  "root:840": {
+    "type": "Other",
+    "dbg": "0x01f200000019 <Other heap object (INTERNALIZED_TWO_BYTE_STRING_TYPE)>"
+  },
+  "root:3": {
+    "type": "uninitialized_value",
+    "dbg": "0x01f200005ca1 <uninitialized_value>"
+  },
+  "root:380": {
+    "type": "string",
+    "dbg": "0x01f200004775 <String[6]: #.catch>",
+    "value": ".catch"
+  },
+  "ro:0:145896": {
+    "type": "string",
+    "dbg": "0x01f2000239e9 <String[11]: #toLowerCase>",
+    "value": "toLowerCase"
+  },
+  "ro:0:144164": {
+    "type": "string",
+    "dbg": "0x01b800023325 <String[4]: #find>",
+    "value": "find"
+  },
+  "root:361": {
+    "type": "string",
+    "dbg": "0x01f2000045cd <String[4]: #Date>",
+    "value": "Date"
+  },
+  "ro:0:146360": {
+    "type": "string",
+    "dbg": "0x01f200023bb9 <String[3]: #now>",
+    "value": "now"
+  },
+  "root:422": {
+    "type": "string",
+    "dbg": "0x01f200004b3d <String[3]: #get>",
+    "value": "get"
+  },
+  "root:557": {
+    "type": "string",
+    "dbg": "0x01b8000056ed <String[3]: #set>",
+    "value": "set"
+  },
+  "root:246": {
+    "type": "string",
+    "dbg": "0x01b800003b81 <String[5]: #lower>",
+    "value": "lower"
+  },
+  "ro:0:144424": {
+    "type": "string",
+    "dbg": "0x02e600023429 <String[8]: #includes>",
+    "value": "includes"
+  },
+  "ro:0:147472": {
+    "type": "string",
+    "dbg": "0x01f200024011 <String[5]: #catch>",
+    "value": "catch"
+  },
+  "ro:2:32064": {
+    "type": "string",
+    "dbg": "0x0254001c7d41 <String[11]: #setInterval>",
+    "value": "setInterval"
+  },
+  "ro:2:31456": {
+    "type": "string",
+    "dbg": "0x0290001c7ae1 <String[13]: #clearInterval>",
+    "value": "clearInterval"
+  },
+  "root:406": {
+    "type": "string",
+    "dbg": "0x0254000049b9 <String[4]: #exec>",
+    "value": "exec"
+  },
+  "root:168": {
+    "type": "string",
+    "dbg": "0x02e600000dd5 <String[9]: #prototype>",
+    "value": "prototype"
+  },
+  "ro:2:4108": {
+    "type": "string",
+    "dbg": "0x01f2001c100d <String[6]: #crypto>",
+    "value": "crypto"
+  },
+  "ro:0:145188": {
+    "type": "string",
+    "dbg": "0x01d100023725 <String[6]: #charAt>",
+    "value": "charAt"
+  },
+  "ro:0:144444": {
+    "type": "string",
+    "dbg": "0x01d10002343d <String[7]: #indexOf>",
+    "value": "indexOf"
+  },
+  "root:573": {
+    "type": "string",
+    "dbg": "0x01f200005861 <String[6]: #String>",
+    "value": "String"
+  },
+  "ro:0:145100": {
+    "type": "string",
+    "dbg": "0x01d1000236cd <String[12]: #fromCharCode>",
+    "value": "fromCharCode"
+  },
+  "root:167": {
+    "type": "string",
+    "dbg": "0x01f200000dc1 <String[6]: #length>",
+    "value": "length"
+  },
+  "ro:0:10112": {
+    "type": "string",
+    "dbg": "0x01d100002781 <String[1]: #%>",
+    "value": "%"
+  },
+  "ro:0:145208": {
+    "type": "string",
+    "dbg": "0x01d100023739 <String[10]: #charCodeAt>",
+    "value": "charCodeAt"
+  },
+  "root:594": {
+    "type": "string",
+    "dbg": "0x025400005a51 <String[8]: #toString>",
+    "value": "toString"
+  },
+  "ro:0:144368": {
+    "type": "string",
+    "dbg": "0x02e6000233f1 <String[5]: #slice>",
+    "value": "slice"
+  },
+  "ro:0:153576": {
+    "type": "string",
+    "dbg": "0x01f2000257e9 <String[18]: #decodeURIComponent>",
+    "value": "decodeURIComponent"
+  },
+  "ro:0:144892": {
+    "type": "string",
+    "dbg": "0x01d1000235fd <String[8]: #parseInt>",
+    "value": "parseInt"
+  },
+  "ro:0:144328": {
+    "type": "string",
+    "dbg": "0x0254000233c9 <String[5]: #shift>",
+    "value": "shift"
+  },
+  "root:415": {
+    "type": "string",
+    "dbg": "0x01f200004a91 <String[4]: #from>",
+    "value": "from"
+  },
+  "root:596": {
+    "type": "string",
+    "dbg": "0x025400005a75 <String[5]: #total>",
+    "value": "total"
+  },
+  "ro:0:134132": {
+    "type": "string",
+    "dbg": "0x01f200020bf5 <String[4]: #join>",
+    "value": "join"
+  },
+  "ro:0:10064": {
+    "type": "string",
+    "dbg": "0x01f200002751 <String[1]: #\">",
+    "value": "\""
+  },
+  "ro:0:10032": {
+    "type": "string",
+    "dbg": "0x01d100002731 <String[1]: # >",
+    "value": " "
+  },
+  "ro:0:145728": {
+    "type": "string",
+    "dbg": "0x025400023941 <String[4]: #trim>",
+    "value": "trim"
+  },
+  "ro:0:10272": {
+    "type": "string",
+    "dbg": "0x01f200002821 <String[1]: #/>",
+    "value": "/"
+  },
+  "ro:0:11504": {
+    "type": "string",
+    "dbg": "0x01d100002cf1 <String[1]: #|>",
+    "value": "|"
+  },
+  "root:620": {
+    "type": "string",
+    "dbg": "0x01f200002831 <String[1]: #0>",
+    "value": "0"
+  },
+  "root:516": {
+    "type": "string",
+    "dbg": "0x01d100002841 <String[1]: #1>",
+    "value": "1"
+  },
+  "ro:0:10320": {
+    "type": "string",
+    "dbg": "0x01d100002851 <String[1]: #2>",
+    "value": "2"
+  },
+  "ro:0:10336": {
+    "type": "string",
+    "dbg": "0x01d100002861 <String[1]: #3>",
+    "value": "3"
+  },
+  "ro:0:10352": {
+    "type": "string",
+    "dbg": "0x01d100002871 <String[1]: #4>",
+    "value": "4"
+  },
+  "root:304": {
+    "type": "string",
+    "dbg": "0x02e6000040e1 <String[4]: #type>",
+    "value": "type"
+  },
+  "root:401": {
+    "type": "string",
+    "dbg": "0x01f20000494d <String[5]: #error>",
+    "value": "error"
+  },
+  "root:509": {
+    "type": "string",
+    "dbg": "0x0254000052cd <String[6]: #Object>",
+    "value": "Object"
+  },
+  "ro:0:145256": {
+    "type": "string",
+    "dbg": "0x01f200023769 <String[8]: #endsWith>",
+    "value": "endsWith"
+  },
+  "ro:0:144520": {
+    "type": "string",
+    "dbg": "0x01d100023489 <String[7]: #flatMap>",
+    "value": "flatMap"
+  },
+  "root:589": {
+    "type": "string",
+    "dbg": "0x02e6000059ed <String[4]: #this>",
+    "value": "this"
+  },
+  "root:169": {
+    "type": "string",
+    "dbg": "0x02e600000ded <String[4]: #name>",
+    "value": "name"
+  },
+  "root:389": {
+    "type": "string",
+    "dbg": "0x01f200002811 <String[1]: #.>",
+    "value": "."
+  },
+  "ro:0:145680": {
+    "type": "string",
+    "dbg": "0x02e600023911 <String[10]: #startsWith>",
+    "value": "startsWith"
+  },
+  "root:392": {
+    "type": "string",
+    "dbg": "0x01f200004875 <String[5]: #Error>",
+    "value": "Error"
+  },
+  "ro:0:137540": {
+    "type": "string",
+    "dbg": "0x00d000021945 <String[6]: #status>",
+    "value": "status"
+  },
+  "ro:0:149200": {
+    "type": "string",
+    "dbg": "0x02c1000246d1 <String[4]: #JSON>",
+    "value": "JSON"
+  },
+  "root:437": {
+    "type": "string",
+    "dbg": "0x01d100004ca5 <String[2]: #id>",
+    "value": "id"
+  },
+  "root:477": {
+    "type": "string",
+    "dbg": "0x02e600005035 <String[7]: #message>",
+    "value": "message"
+  },
+  "root:771": {
+    "type": "AccessorInfo",
+    "dbg": "0x02e600288685 <AccessorInfo name= 0x02e600000dd5 <String[9]: #prototype>, data= 0x02e600000069 <undefined>>"
+  },
+  "root:769": {
+    "type": "AccessorInfo",
+    "dbg": "0x02e600288655 <AccessorInfo name= 0x02e600000ded <String[4]: #name>, data= 0x02e600000069 <undefined>>"
+  },
+  "root:770": {
+    "type": "AccessorInfo",
+    "dbg": "0x02e60028866d <AccessorInfo name= 0x02e600000dc1 <String[6]: #length>, data= 0x02e600000069 <undefined>>"
+  },
+  "root:631": {
+    "type": "symbol",
+    "dbg": "0x02e600005d31 <Symbol: (class_positions_symbol)>"
+  },
+  "root:744": {
+    "type": "string",
+    "dbg": "0x02e6000060f1 <String[11]: #constructor>",
+    "value": "constructor"
+  },
+  "ro:0:145552": {
+    "type": "string",
+    "dbg": "0x025400023891 <String[7]: #replace>",
+    "value": "replace"
+  },
+  "ro:0:11040": {
+    "type": "string",
+    "dbg": "0x02e600002b21 <String[1]: #_>",
+    "value": "_"
+  },
+  "ro:0:143500": {
+    "type": "string",
+    "dbg": "0x00d00002308d <String[6]: #create>",
+    "value": "create"
+  },
+  "root:402": {
+    "type": "string",
+    "dbg": "0x02e600004961 <String[6]: #errors>",
+    "value": "errors"
+  },
+  "root:6": {
+    "type": "null",
+    "dbg": "0x01f200000085 <null>"
+  },
+  "root:8": {
+    "type": "false",
+    "dbg": "0x0254000000ad <false>"
+  },
+  "ro:0:153876": {
+    "type": "string",
+    "dbg": "0x02e600025915 <String[4]: #info>",
+    "value": "info"
+  },
+  "ro:0:149584": {
+    "type": "string",
+    "dbg": "0x01f200024851 <String[3]: #log>",
+    "value": "log"
+  },
+  "ro:0:147400": {
+    "type": "string",
+    "dbg": "0x02e600023fc9 <String[18]: #toLocaleTimeString>",
+    "value": "toLocaleTimeString"
+  },
+  "ro:0:154100": {
+    "type": "string",
+    "dbg": "0x00d0000259f5 <String[4]: #time>",
+    "value": "time"
+  },
+  "ro:0:144484": {
+    "type": "string",
+    "dbg": "0x02e600023465 <String[6]: #filter>",
+    "value": "filter"
+  },
+  "ro:0:144592": {
+    "type": "string",
+    "dbg": "0x02e6000234d1 <String[6]: #reduce>",
+    "value": "reduce"
+  },
+  "root:540": {
+    "type": "string",
+    "dbg": "0x01f20000556d <String[6]: #reject>",
+    "value": "reject"
+  },
+  "ro:0:145656": {
+    "type": "string",
+    "dbg": "0x00d0000238f9 <String[9]: #substring>",
+    "value": "substring"
+  },
+  "ro:0:147788": {
+    "type": "string",
+    "dbg": "0x02540002414d <String[4]: #test>",
+    "value": "test"
+  },
+  "ro:0:153892": {
+    "type": "string",
+    "dbg": "0x02e600025925 <String[4]: #warn>",
+    "value": "warn"
+  },
+  "ro:0:11136": {
+    "type": "string",
+    "dbg": "0x01e800002b81 <String[1]: #e>",
+    "value": "e"
+  },
+  "root:324": {
+    "type": "string",
+    "dbg": "0x00d000004299 <String[5]: #Array>",
+    "value": "Array"
+  },
+  "ro:0:144028": {
+    "type": "string",
+    "dbg": "0x00d00002329d <String[7]: #isArray>",
+    "value": "isArray"
+  },
+  "ro:2:29632": {
+    "type": "string",
+    "dbg": "0x01f2001c73c1 <String[3]: #URL>",
+    "value": "URL"
+  },
+  "ro:2:35836": {
+    "type": "string",
+    "dbg": "0x00d0001c8bfd <String[4]: #body>",
+    "value": "body"
+  },
+  "ro:0:10448": {
+    "type": "string",
+    "dbg": "0x00d0000028d1 <String[1]: #:>",
+    "value": ":"
+  },
+  "root:305": {
+    "type": "string",
+    "dbg": "0x02e6000040f1 <String[7]: #unknown>",
+    "value": "unknown"
+  },
+  "ro:0:144540": {
+    "type": "string",
+    "dbg": "0x01f20002349d <String[3]: #map>",
+    "value": "map"
+  },
+  "root:464": {
+    "type": "string",
+    "dbg": "0x01e800004f29 <String[4]: #keys>",
+    "value": "keys"
+  },
+  "ro:2:32088": {
+    "type": "string",
+    "dbg": "0x02e6001c7d59 <String[10]: #setTimeout>",
+    "value": "setTimeout"
+  },
+  "ro:0:137180": {
+    "type": "string",
+    "dbg": "0x02e6000217dd <String[3]: #all>",
+    "value": "all"
+  },
+  "ro:0:144732": {
+    "type": "string",
+    "dbg": "0x02e60002355d <String[7]: #toFixed>",
+    "value": "toFixed"
+  },
+  "ro:0:11360": {
+    "type": "string",
+    "dbg": "0x00d000002c61 <String[1]: #s>",
+    "value": "s"
+  },
+  "ro:0:10080": {
+    "type": "string",
+    "dbg": "0x00d000002761 <String[1]: ##>",
+    "value": "#"
+  },
+  "ro:0:152176": {
+    "type": "string",
+    "dbg": "0x00d000025271 <String[8]: #subarray>",
+    "value": "subarray"
+  },
+  "ro:0:143608": {
+    "type": "string",
+    "dbg": "0x0254000230f9 <String[7]: #entries>",
+    "value": "entries"
+  },
+  "ro:0:147492": {
+    "type": "string",
+    "dbg": "0x00d000024025 <String[7]: #finally>",
+    "value": "finally"
+  },
+  "ro:0:153632": {
+    "type": "string",
+    "dbg": "0x00d000025821 <String[18]: #encodeURIComponent>",
+    "value": "encodeURIComponent"
+  },
+  "ro:0:149264": {
+    "type": "string",
+    "dbg": "0x01f200024711 <String[4]: #Math>",
+    "value": "Math"
+  },
+  "ro:0:149672": {
+    "type": "string",
+    "dbg": "0x00d0000248a9 <String[3]: #min>",
+    "value": "min"
+  },
+  "ro:0:149656": {
+    "type": "string",
+    "dbg": "0x01f200024899 <String[3]: #max>",
+    "value": "max"
+  },
+  "ro:0:10176": {
+    "type": "string",
+    "dbg": "0x0261000027c1 <String[1]: #)>",
+    "value": ")"
+  },
+  "ro:0:149688": {
+    "type": "string",
+    "dbg": "0x00d0000248b9 <String[3]: #pow>",
+    "value": "pow"
+  },
+  "root:135": {
+    "type": "NumberDictionary",
+    "dbg": "0x02e6000061c1 <NumberDictionary[7]>"
+  },
+  "root:128": {
+    "type": "EnumCache",
+    "dbg": "0x02e60000074d <EnumCache>"
+  },
+  "root:357": {
+    "type": "string",
+    "dbg": "0x01f200004575 <String[7]: #console>",
+    "value": "console"
+  },
+  "root:515": {
+    "type": "string",
+    "dbg": "0x02c100005361 <String[2]: #ok>",
+    "value": "ok"
+  },
+  "ro:0:137604": {
+    "type": "string",
+    "dbg": "0x025400021985 <String[6]: #reason>",
+    "value": "reason"
+  },
+  "ro:2:35728": {
+    "type": "string",
+    "dbg": "0x0254001c8b91 <String[5]: #title>",
+    "value": "title"
+  },
+  "ro:0:146376": {
+    "type": "string",
+    "dbg": "0x02c100023bc9 <String[5]: #parse>",
+    "value": "parse"
+  },
+  "ro:0:149216": {
+    "type": "string",
+    "dbg": "0x02c1000246e1 <String[9]: #stringify>",
+    "value": "stringify"
+  },
+  "ro:2:1412": {
+    "type": "string",
+    "dbg": "0x0254001c0585 <String[6]: #closed>",
+    "value": "closed"
+  },
+  "root:542": {
+    "type": "string",
+    "dbg": "0x02c100005599 <String[9]: #resizable>",
+    "value": "resizable"
+  },
+  "root:747": {
+    "type": "string",
+    "dbg": "0x01f20000612d <String[4]: #then>",
+    "value": "then"
+  },
+  "root:554": {
+    "type": "string",
+    "dbg": "0x02e6000056b9 <String[3]: #Set>",
+    "value": "Set"
+  },
+  "ro:0:9680": {
+    "type": "string",
+    "dbg": "0x02e6000025d1 <String[1]: #\\n>",
+    "value": "\n"
+  },
+  "ro:0:146444": {
+    "type": "string",
+    "dbg": "0x02e600023c0d <String[11]: #toISOString>",
+    "value": "toISOString"
+  },
+  "ro:0:10976": {
+    "type": "string",
+    "dbg": "0x02e600002ae1 <String[1]: #[>",
+    "value": "["
+  },
+  "ro:0:10528": {
+    "type": "string",
+    "dbg": "0x025400002921 <String[1]: #?>",
+    "value": "?"
+  },
+  "ro:0:149724": {
+    "type": "string",
+    "dbg": "0x0254000248dd <String[5]: #round>",
+    "value": "round"
+  },
+  "ro:2:31752": {
+    "type": "string",
+    "dbg": "0x02e6001c7c09 <String[11]: #postMessage>",
+    "value": "postMessage"
+  },
+  "ro:2:30688": {
+    "type": "string",
+    "dbg": "0x0254001c77e1 <String[6]: #Worker>",
+    "value": "Worker"
+  },
+  "ro:0:145320": {
+    "type": "string",
+    "dbg": "0x02e6000237a9 <String[5]: #fixed>",
+    "value": "fixed"
+  },
+  "ro:0:10192": {
+    "type": "string",
+    "dbg": "0x0254000027d1 <String[1]: #*>",
+    "value": "*"
+  },
+  "root:431": {
+    "type": "string",
+    "dbg": "0x02e600004c29 <String[3]: #has>",
+    "value": "has"
+  },
+  "root:445": {
+    "type": "string",
+    "dbg": "0x02e600004d55 <String[5]: #input>",
+    "value": "input"
+  },
+  "root:182": {
+    "type": "string",
+    "dbg": "0x02e6000035f1 <String[4]: #ceil>",
+    "value": "ceil"
+  },
+  "ro:0:11200": {
+    "type": "string",
+    "dbg": "0x02e600002bc1 <String[1]: #i>",
+    "value": "i"
+  },
+  "ro:2:31484": {
+    "type": "string",
+    "dbg": "0x02e6001c7afd <String[12]: #clearTimeout>",
+    "value": "clearTimeout"
+  },
+  "root:360": {
+    "type": "string",
+    "dbg": "0x0254000045b9 <String[7]: #current>",
+    "value": "current"
+  },
+  "ro:0:145920": {
+    "type": "string",
+    "dbg": "0x02e600023a01 <String[11]: #toUpperCase>",
+    "value": "toUpperCase"
+  },
+  "ro:0:10880": {
+    "type": "string",
+    "dbg": "0x025400002a81 <String[1]: #U>",
+    "value": "U"
+  },
+  "ro:0:10688": {
+    "type": "string",
+    "dbg": "0x0254000029c1 <String[1]: #I>",
+    "value": "I"
+  },
+  "ro:0:10704": {
+    "type": "string",
+    "dbg": "0x0254000029d1 <String[1]: #J>",
+    "value": "J"
+  },
+  "ro:0:10592": {
+    "type": "string",
+    "dbg": "0x025400002961 <String[1]: #C>",
+    "value": "C"
+  },
+  "ro:0:146576": {
+    "type": "string",
+    "dbg": "0x02e600023c91 <String[11]: #getFullYear>",
+    "value": "getFullYear"
+  },
+  "ro:0:10240": {
+    "type": "string",
+    "dbg": "0x02e600002801 <String[1]: #->",
+    "value": "-"
+  },
+  "ro:0:146768": {
+    "type": "string",
+    "dbg": "0x02e600023d51 <String[8]: #getMonth>",
+    "value": "getMonth"
+  },
+  "ro:0:145512": {
+    "type": "string",
+    "dbg": "0x02e600023869 <String[8]: #padStart>",
+    "value": "padStart"
+  },
+  "ro:0:146516": {
+    "type": "string",
+    "dbg": "0x02e600023c55 <String[7]: #getDate>",
+    "value": "getDate"
+  },
+  "ro:0:146624": {
+    "type": "string",
+    "dbg": "0x02e600023cc1 <String[8]: #getHours>",
+    "value": "getHours"
+  },
+  "ro:0:146720": {
+    "type": "string",
+    "dbg": "0x02e600023d21 <String[10]: #getMinutes>",
+    "value": "getMinutes"
+  },
+  "ro:0:144388": {
+    "type": "string",
+    "dbg": "0x02e600023405 <String[4]: #sort>",
+    "value": "sort"
+  },
+  "ro:0:153908": {
+    "type": "string",
+    "dbg": "0x02e600025935 <String[3]: #dir>",
+    "value": "dir"
+  },
+  "ro:0:145532": {
+    "type": "string",
+    "dbg": "0x01f20002387d <String[6]: #repeat>",
+    "value": "repeat"
+  },
+  "root:376": {
+    "type": "string",
+    "dbg": "0x01f200004725 <String[8]: #detached>",
+    "value": "detached"
+  },
+  "root:506": {
+    "type": "string",
+    "dbg": "0x01f200005289 <String[6]: #Number>",
+    "value": "Number"
+  },
+  "ro:0:144276": {
+    "type": "string",
+    "dbg": "0x01f200023395 <String[3]: #pop>",
+    "value": "pop"
+  },
+  "root:565": {
+    "type": "string",
+    "dbg": "0x01f2000057a9 <String[4]: #size>",
+    "value": "size"
+  }
+}
