@@ -1,4 +1,5 @@
 node_modules/
 out/
+web/
 *.log
 .DS_Store

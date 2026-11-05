@@ -3,7 +3,8 @@ const { E, ID } = require('./ast');
 
 const EFFECT = new Set(['call', 'new', 'assign', 'await', 'yield']);
 const isTemp = (n) => typeof n === 'string' && n[0] === '$';
-const isParam = (n) => typeof n === 'string' && /^a\d+$/.test(n);
+const isParam = (n) => typeof n === 'string' && /^[ab]\d+$/.test(n);
+const isObfName = (n) => typeof n === 'string' && /^_0x[0-9a-f]+$/i.test(n);
 const RESERVED = new Set('break case catch class const continue debugger default delete do else enum export extends false finally for function if import in instanceof new null return super switch this throw true try typeof var void while with yield let static await arguments undefined NaN Infinity'.split(' '));
 
 function kids(e) {
@@ -573,6 +574,39 @@ function recoverParams(info) {
   for (let i = 0; i < body.length; i++) {
     const s = body[i];
     if (s.t === 'var' && s.e && s.e.k === 'id' && isParam(s.e.name) && info.params.includes(s.e.name) && !isTemp(s.name)) {
+      if (isObfName(s.name)) {
+        const oldName = s.name;
+        const idx = info.params.indexOf(s.e.name);
+        const hintName = (info.name && FN_PARAM_HINTS[info.name]?.[idx]) || (info._paramHints?.[idx]) || s.e.name;
+        info.params[idx] = hintName;
+        const repl = (list) => {
+          for (const st of list) {
+            for (const [o, k] of stmtExprs(st)) o[k] = mapExpr(o[k], n => {
+              if (n.k === 'id' && n.name === oldName) return E.id(hintName);
+              if (n.k === 'fn' && n.info?.body) {
+                if (/^a\d+$/.test(hintName) && n.info.params.includes(hintName)) {
+                  const subIdx = n.info.params.indexOf(hintName);
+                  const subNew = 'b' + subIdx;
+                  n.info.params[subIdx] = subNew;
+                  const replSub = (subList) => {
+                    for (const sst of subList) {
+                      for (const [so, sk] of stmtExprs(sst)) so[sk] = mapExpr(so[sk], sn => (sn.k === 'id' && sn.name === hintName ? E.id(subNew) : null));
+                      for (const sb of childBlocks(sst)) replSub(sb);
+                    }
+                  };
+                  replSub(n.info.body);
+                }
+                if (!n.info.params.includes(oldName)) repl(n.info.body);
+              }
+              return null;
+            });
+            for (const b of childBlocks(st)) repl(b);
+          }
+        };
+        repl(body.slice(i + 1));
+        body.splice(i, 1); i--;
+        continue;
+      }
       const idx = info.params.indexOf(s.e.name);
       info.params[idx] = s.name;
       body.splice(i, 1); i--;
@@ -724,16 +758,35 @@ const FN_PARAM_HINTS = {
   swapEndianness: ['vertexBuffer'],
   swapWord: ['buf', 'off'],
   swapDWord: ['buf', 'off'],
+  overridePaths: ['opts'],
+  initializePaths: ['config'],
+  FileToHex: ['filePath'],
+  ScanForId: ['buf'],
+  VerifyEncrypted: ['filePath'],
+  DecryptFile: ['filePath', 'key'],
+  DecryptBuffer: ['buf', 'key'],
+  CalculateClientKey: ['clkBuf', 'resourceId'],
+  ValidateDecryption: ['buf'],
+  ProcessLuaFile: ['buf', 'outputPath', 'resourceName', 'relPath'],
+  DecryptResourceFile: ['resourceDir', 'relPath', 'keyInfo', 'resourceName', 'grantsData'],
+  GetAllFiles: ['dirPath'],
+  GetDirectories: ['dirPath'],
+  ValidateKey: ['keySource'],
+  DecryptResource: ['resourceDir', 'resourceName', 'grantsObj'],
+  startDecryption: ['config'],
 };
 
-function rename(info, usedOuter = new Set()) {
+function rename(info, usedOuter = new Set(), outerObfMap = new Map()) {
   const names = new Set(usedOuter);
   const propHints = new Map();
   const collect = (body) => eachExprDeep(body, (o, k) => walkExpr(o[k], n => {
-    if (n.k === 'id' && !isTemp(n.name) && !isParam(n.name)) names.add(n.name);
+    if (n.k === 'id' && !isTemp(n.name) && !isParam(n.name) && !isObfName(n.name)) names.add(n.name);
+    if (n.k === 'fn' && n.info) {
+      if (n.info.methods) for (const m of n.info.methods) if (!m.computed && typeof m.key === 'string' && !m.fn.info.name) m.fn.info.name = m.key;
+    }
     if (n.k === 'obj') {
       for (const p of n.props) {
-        if (!p.computed && typeof p.key === 'string' && ID.test(p.key) && p.value?.k === 'id' && isTemp(p.value.name)) {
+        if (!p.computed && typeof p.key === 'string' && ID.test(p.key) && p.value?.k === 'id' && (isTemp(p.value.name) || isObfName(p.value.name))) {
           propHints.set(p.value.name, p.key);
         }
       }
@@ -744,9 +797,10 @@ function rename(info, usedOuter = new Set()) {
   const paramMap = new Map();
   const hints = (info.name && FN_PARAM_HINTS[info.name]) || null;
   (info.params || []).forEach((p, idx) => {
-    if (!isParam(p)) { names.add(p); return; }
+    if (!isParam(p) && !isObfName(p)) { names.add(p); return; }
     let cand = hints && hints[idx] ? hints[idx] : null;
     if (!cand && info.kind && /Ctor/.test(info.kind) && idx === 0) cand = 'opts';
+    if (!cand && isObfName(p)) cand = 'a' + idx;
     if (cand && !names.has(cand) && !RESERVED.has(cand)) {
       info.params[idx] = cand;
       paramMap.set(p, cand);
@@ -786,13 +840,13 @@ function rename(info, usedOuter = new Set()) {
             uncaughtException: ['err'], unhandledRejection: ['err'],
           };
           if (evHints[arg0Lit]) lastArg.info._paramHints = evHints[arg0Lit];
-        } else if ((fnName === 'exec' || fnName === 'execFile') && ps.length === 2) {
+        } else if ((fnName === 'exec' || fnName === 'execFile') && ps.length >= 1) {
           lastArg.info._paramHints = ['err', 'stdout'];
         } else if (fnName === 'reduce' && ps.length === 2) {
           lastArg.info._paramHints = ['acc', 'item'];
         } else if (fnName === 'sort' && ps.length === 2) {
           lastArg.info._paramHints = ['a', 'b'];
-        } else if ((fnName === 'map' || fnName === 'filter' || fnName === 'find' || fnName === 'forEach') && ps.length === 1) {
+        } else if ((fnName === 'map' || fnName === 'filter' || fnName === 'find' || fnName === 'forEach' || fnName === 'flatMap') && ps.length === 1) {
           lastArg.info._paramHints = ['item'];
         } else if (fnName === 'then' && ps.length === 1) {
           lastArg.info._paramHints = ['res'];
@@ -806,7 +860,7 @@ function rename(info, usedOuter = new Set()) {
   tagCallbacks(info.body);
   if (info._paramHints) {
     info.params.forEach((p, idx) => {
-      if (isParam(p) && info._paramHints[idx] && !names.has(info._paramHints[idx])) {
+      if ((isParam(p) || isObfName(p)) && info._paramHints[idx] && !names.has(info._paramHints[idx])) {
         info.params[idx] = info._paramHints[idx];
         paramMap.set(p, info._paramHints[idx]);
         names.add(info._paramHints[idx]);
@@ -814,53 +868,58 @@ function rename(info, usedOuter = new Set()) {
     });
   }
 
-  const map = new Map(paramMap);
+  const obfMap = new Map(outerObfMap);
+  for (const p of (info.params || [])) if (!paramMap.has(p)) obfMap.delete(p);
+  for (const [oldP, newP] of paramMap) obfMap.set(oldP, newP);
+  const map = new Map([...obfMap, ...paramMap]);
   const counters = {};
   const allocName = (t, base) => {
     if (map.has(t)) return map.get(t);
     if (base && !RESERVED.has(base) && ID.test(base)) {
-      if (!names.has(base)) { names.add(base); map.set(t, base); return base; }
+      if (!names.has(base)) { names.add(base); map.set(t, base); if (isObfName(t)) obfMap.set(t, base); return base; }
       for (let k = 2; k <= 9; k++) {
         const cand = base + k;
-        if (!names.has(cand)) { names.add(cand); map.set(t, cand); return cand; }
+        if (!names.has(cand)) { names.add(cand); map.set(t, cand); if (isObfName(t)) obfMap.set(t, cand); return cand; }
       }
     }
-    const pre = t[1] || 'v';
+    const pre = isObfName(t) ? 'v' : (t[1] || 'v');
     let n;
     do { n = (pre === 'v' ? 'v' : pre) + (counters[pre] = (counters[pre] === undefined ? 0 : counters[pre] + 1)); } while (names.has(n));
     names.add(n);
     map.set(t, n);
+    if (isObfName(t)) obfMap.set(t, n);
     return n;
   };
 
   const fix = (body) => {
     for (const s of body) {
-      if (s.t === 'fndecl') rename(s.info, names);
+      if (s.t === 'fndecl') rename(s.info, names, obfMap);
       if (s.t === 'var' && s.destruct) {
-        s.destruct = s.destruct.map((n, idx) => isTemp(n) ? allocName(n, idx === 0 ? 'k' : 'v') : n);
+        s.destruct = s.destruct.map((n, idx) => (isTemp(n) || isObfName(n)) ? allocName(n, idx === 0 ? 'k' : 'v') : n);
         s.name = '[' + s.destruct.join(', ') + ']';
-      } else if (s.t === 'var' && isTemp(s.name)) {
+      } else if (s.t === 'var' && (isTemp(s.name) || isObfName(s.name))) {
         const hint = propHints.get(s.name) || inferExprName(s.e);
         s.name = allocName(s.name, hint);
       }
-      if (s.t === 'decl') s.names = s.names.map(n => isTemp(n) ? allocName(n, propHints.get(n)) : n);
+      if (s.t === 'decl') s.names = s.names.map(n => (isTemp(n) || isObfName(n)) ? allocName(n, propHints.get(n)) : n);
       if (s.t === 'for') {
         if (s.init) s.init = s.init.replace(/\$[a-z]\d+/g, m => allocName(m, 'i'));
         if (s.update) s.update = s.update.replace(/\$[a-z]\d+/g, m => allocName(m, 'i'));
       }
       if (s.t === 'forin' && s.destruct) {
         const isEntries = s.e && s.e.k === 'call' && s.e.fn.k === 'member' && s.e.fn.prop === 'entries';
-        s.destruct = s.destruct.map((n, idx) => isTemp(n) ? allocName(n, isEntries ? (idx === 0 ? 'key' : 'val') : null) : n);
+        s.destruct = s.destruct.map((n, idx) => (isTemp(n) || isObfName(n)) ? allocName(n, isEntries ? (idx === 0 ? 'key' : 'val') : null) : n);
         s.name = '[' + s.destruct.join(', ') + ']';
-      } else if (s.t === 'forin' && isTemp(s.name)) {
+      } else if (s.t === 'forin' && (isTemp(s.name) || isObfName(s.name))) {
         const iterName = s.e?.k === 'id' ? s.e.name : (s.e?.k === 'member' ? s.e.prop : null);
         s.name = allocName(s.name, singularize(iterName));
       }
+      if (s.t === 'try' && s.param && (isTemp(s.param) || isObfName(s.param))) s.param = allocName(s.param, 'err');
       for (const [o, k] of stmtExprs(s)) o[k] = mapExpr(o[k], (n) => {
-        if (n.k === 'id' && (isTemp(n.name) || paramMap.has(n.name))) { n.name = allocName(n.name); }
+        if (n.k === 'id' && (isTemp(n.name) || isObfName(n.name) || map.has(n.name))) { n.name = allocName(n.name); }
         if (n.k === 'fn') {
-          rename(n.info, names);
-          if (n.info.methods) for (const m of n.info.methods) if (m.fn && m.fn.info) rename(m.fn.info, names);
+          rename(n.info, names, obfMap);
+          if (n.info.methods) for (const m of n.info.methods) if (m.fn && m.fn.info) rename(m.fn.info, names, obfMap);
         }
         return null;
       });
@@ -868,6 +927,321 @@ function rename(info, usedOuter = new Set()) {
     }
   };
   fix(info.body);
+}
+
+function customB64Decode(str) {
+  const alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';
+  let out = '', bc = 0, bs = 0;
+  for (let i = 0; i < str.length; i++) {
+    const idx = alpha.indexOf(str.charAt(i));
+    if (~idx) {
+      bs = bc % 4 ? bs * 64 + idx : idx;
+      if (bc++ % 4) out += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6)));
+    }
+  }
+  let uri = '';
+  for (let i = 0; i < out.length; i++) uri += '%' + ('00' + out.charCodeAt(i).toString(16)).slice(-2);
+  try { return decodeURIComponent(uri); } catch { return out; }
+}
+
+function deobfuscate0x(info) {
+  const body = info.body;
+  let arrFnIdx = -1, arrFnName = null, rawArr = null;
+  for (let i = 0; i < body.length; i++) {
+    const s = body[i];
+    if (s.t === 'fndecl' && /^_0x/.test(s.info.name || '')) {
+      const vStmt = s.info.body.find(x => x.t === 'var' && x.e && x.e.k === 'arr' && x.e.elems.length >= 10 && x.e.elems.every(el => el && el.k === 'lit' && typeof el.v === 'string'));
+      if (vStmt) {
+        arrFnIdx = i;
+        arrFnName = s.info.name;
+        rawArr = vStmt.e.elems.map(el => el.v);
+        break;
+      }
+    }
+  }
+  if (!rawArr) return false;
+
+  let decFnIdx = -1, decFnName = null, baseOffset = 0, useB64 = false;
+  for (let i = 0; i < body.length; i++) {
+    const s = body[i];
+    if (s.t === 'fndecl' && /^_0x/.test(s.info.name || '') && i !== arrFnIdx) {
+      let callsArr = false;
+      eachExprDeep(s.info.body, (o, k) => walkExpr(o[k], n => {
+        if (n.k === 'call' && n.fn.k === 'id' && n.fn.name === arrFnName) callsArr = true;
+        if (n.k === 'lit' && typeof n.v === 'string' && n.v.startsWith('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')) useB64 = true;
+      }));
+      if (callsArr) {
+        decFnIdx = i;
+        decFnName = s.info.name;
+        const first = s.info.body[0];
+        if (first && first.t === 'expr' && first.e.k === 'assign') {
+          if (first.e.op === '-=' && first.e.value.k === 'lit') baseOffset = first.e.value.v;
+          else if (first.e.op === '=' && first.e.value.k === 'bin' && first.e.value.op === '-' && first.e.value.r.k === 'lit') baseOffset = first.e.value.r.v;
+        }
+        break;
+      }
+    }
+  }
+  if (!decFnName) return false;
+
+  const getStr = (idx) => {
+    const s = rawArr[idx - baseOffset];
+    if (s === undefined) return '';
+    return useB64 ? customB64Decode(s) : s;
+  };
+
+  let iifeIdx = -1;
+  for (let i = 0; i < body.length; i++) {
+    const s = body[i];
+    if (s.t === 'expr' && s.e.k === 'call' && s.e.fn.k === 'fn' && s.e.args.length === 2 && s.e.args[0].k === 'id' && s.e.args[0].name === arrFnName && s.e.args[1].k === 'lit') {
+      iifeIdx = i;
+      const targetSum = s.e.args[1].v;
+      let sumExpr = null;
+      eachExprDeep(s.e.fn.info.body, (o, k) => walkExpr(o[k], n => {
+        if (n.k === 'bin' && n.op === '===' && n.r.k === 'id') sumExpr = n.l;
+      }));
+      if (sumExpr) {
+        const evalAst = (e) => {
+          if (e.k === 'lit') return e.v;
+          if (e.k === 'un' && e.op === '-') return -evalAst(e.e);
+          if (e.k === 'un' && e.op === '+') return +evalAst(e.e);
+          if (e.k === 'bin') {
+            const l = evalAst(e.l), r = evalAst(e.r);
+            switch (e.op) {
+              case '+': return l + r;
+              case '-': return l - r;
+              case '*': return l * r;
+              case '/': return l / r;
+            }
+          }
+          if (e.k === 'call' && e.fn.k === 'id' && e.fn.name === 'parseInt' && e.args[0]?.k === 'call' && e.args[0].args[0]?.k === 'lit') {
+            return parseInt(getStr(e.args[0].args[0].v), 10);
+          }
+          return NaN;
+        };
+        for (let rot = 0; rot < rawArr.length; rot++) {
+          const val = evalAst(sumExpr);
+          if (Math.round(val) === targetSum) break;
+          rawArr.push(rawArr.shift());
+        }
+      }
+      break;
+    }
+  }
+
+  const toRemove = [arrFnIdx, decFnIdx, iifeIdx].filter(x => x >= 0).sort((a, b) => b - a);
+  for (const idx of toRemove) body.splice(idx, 1);
+
+  const cleanScope = (stmts, parentAliases) => {
+    const aliases = new Set(parentAliases);
+    const collectAliases = (list) => {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (let i = list.length - 1; i >= 0; i--) {
+          const s = list[i];
+          if (s.t === 'var' && s.e && s.e.k === 'id' && aliases.has(s.e.name)) {
+            aliases.add(s.name);
+            list.splice(i, 1);
+            changed = true;
+          } else if (s.t === 'expr' && s.e.k === 'assign' && s.e.op === '=' && s.e.target.k === 'id' && s.e.value.k === 'id' && aliases.has(s.e.value.name)) {
+            aliases.add(s.e.target.name);
+            list.splice(i, 1);
+            changed = true;
+          }
+        }
+      }
+      for (const s of list) {
+        for (const [o, k] of stmtExprs(s)) walkExpr(o[k], n => {
+          if (n.k === 'fn' && n.info?.body) collectAliases(n.info.body);
+        });
+        for (const b of childBlocks(s)) collectAliases(b);
+      }
+    };
+    collectAliases(stmts);
+
+    const replaceAllDecoderCalls = (list) => {
+      eachExprDeep(list, (o, k) => {
+        o[k] = mapExpr(o[k], n => {
+          if (n.k === 'call' && n.fn.k === 'id' && aliases.has(n.fn.name) && n.args.length === 1 && n.args[0].k === 'lit' && typeof n.args[0].v === 'number') {
+            return E.lit(getStr(n.args[0].v));
+          }
+          if (n.k === 'fn' && n.info?.body) replaceAllDecoderCalls(n.info.body);
+          return null;
+        });
+      });
+    };
+    replaceAllDecoderCalls(stmts);
+    const foldIndexToMember = (list) => {
+      eachExprDeep(list, (o, k) => {
+        o[k] = mapExpr(o[k], n => {
+          if (n.k === 'fn' && n.info?.body) foldIndexToMember(n.info.body);
+          if (n.k === 'index' && n.key.k === 'lit' && typeof n.key.v === 'string' && ID.test(n.key.v)) {
+            return E.member(n.obj, n.key.v);
+          }
+          if (n.k === 'index' && n.obj.k === 'obj' && n.key.k === 'lit' && typeof n.key.v === 'string') {
+            const found = n.obj.props.find(p => !p.computed && p.key === n.key.v);
+            if (found && found.value.k === 'lit') return E.lit(found.value.v);
+          }
+          if (n.k === 'member' && n.obj.k === 'obj' && ID.test(n.prop)) {
+            const found = n.obj.props.find(p => !p.computed && p.key === n.prop);
+            if (found && found.value.k === 'lit') return E.lit(found.value.v);
+          }
+          return null;
+        });
+      });
+    };
+    foldIndexToMember(stmts);
+
+    const proxies = new Map();
+    for (let i = 0; i < stmts.length; i++) {
+      const s = stmts[i];
+      const isProxyObj = (obj) => obj && obj.k === 'obj' && obj.props.length > 0 && obj.props.every(p => !p.computed && typeof p.key === 'string' && /^[A-Za-z0-9]{5}$/.test(p.key) && (p.value.k === 'lit' || p.value.k === 'fn' || (p.value.k === 'call' && p.value.fn.k === 'id' && aliases.has(p.value.fn.name))));
+      if (s.t === 'var' && isProxyObj(s.e)) {
+        const pmap = new Map();
+        for (const p of s.e.props) {
+          let val = p.value;
+          if (val.k === 'call' && val.fn.k === 'id' && aliases.has(val.fn.name) && val.args[0]?.k === 'lit') val = E.lit(getStr(val.args[0].v));
+          pmap.set(p.key, val);
+        }
+        proxies.set(s.name, { map: pmap, idx: i });
+      } else if (s.t === 'expr' && s.e.k === 'assign' && s.e.op === '=' && s.e.target.k === 'id' && isProxyObj(s.e.value)) {
+        const pmap = new Map();
+        for (const p of s.e.value.props) {
+          let val = p.value;
+          if (val.k === 'call' && val.fn.k === 'id' && aliases.has(val.fn.name) && val.args[0]?.k === 'lit') val = E.lit(getStr(val.args[0].v));
+          pmap.set(p.key, val);
+        }
+        proxies.set(s.e.target.name, { map: pmap, idx: i });
+      }
+    }
+
+    if (proxies.size > 0) {
+      const applyProxyBlock = (list) => {
+        for (let pass = 0; pass < 3; pass++) {
+          eachExprDeep(list, (o, k) => {
+            o[k] = mapExpr(o[k], n => {
+              if ((n.k === 'member' || (n.k === 'index' && n.key.k === 'lit')) && n.obj.k === 'id' && proxies.has(n.obj.name)) {
+                const prop = n.k === 'member' ? n.prop : n.key.v;
+                const val = proxies.get(n.obj.name).map.get(prop);
+                if (val && val.k === 'lit') return E.lit(val.v);
+              }
+              if (n.k === 'call' && (n.fn.k === 'member' || (n.fn.k === 'index' && n.fn.key.k === 'lit')) && n.fn.obj.k === 'id' && proxies.has(n.fn.obj.name)) {
+                const prop = n.fn.k === 'member' ? n.fn.prop : n.fn.key.v;
+                const val = proxies.get(n.fn.obj.name).map.get(prop);
+                if (val && val.k === 'fn' && val.info.body.length === 1 && val.info.body[0].t === 'return') {
+                  const ret = val.info.body[0].e;
+                  const ps = val.info.params;
+                  if (ret.k === 'bin' && ret.l.k === 'id' && ret.r.k === 'id' && ps.length === 2) {
+                    const a = ret.l.name === ps[0] ? n.args[0] : n.args[1];
+                    const b = ret.r.name === ps[1] ? n.args[1] : n.args[0];
+                    if (a && b) return E.bin(ret.op, a, b);
+                  }
+                  if (ret.k === 'call' && ret.fn.k === 'id' && ret.fn.name === ps[0]) {
+                    return E.call(n.args[0], n.args.slice(1));
+                  }
+                }
+              }
+              return null;
+            });
+          });
+        }
+        eachExprDeep(list, (o, k) => walkExpr(o[k], n => {
+          if (n.k === 'fn' && n.info?.body) applyProxyBlock(n.info.body);
+        }));
+      };
+      applyProxyBlock(stmts);
+      const idxs = [...proxies.values()].map(p => p.idx).sort((a, b) => b - a);
+      for (const idx of idxs) stmts.splice(idx, 1);
+    }
+
+    const walkBlocks = (list) => {
+      for (let i = 0; i < list.length; i++) {
+        const s = list[i];
+        if (s.t === 'fndecl') cleanScope(s.info.body, aliases);
+        for (const [o, k] of stmtExprs(s)) {
+          walkExpr(o[k], n => {
+            if (n.k === 'fn') {
+              if (n.info.methods) {
+                for (const m of n.info.methods) {
+                  if (m.computed && m.key && m.key.k === 'lit' && typeof m.key.v === 'number') {
+                    m.key = E.lit(getStr(m.key.v));
+                  }
+                  if (m.computed && m.key && m.key.k === 'call' && m.key.fn.k === 'id' && aliases.has(m.key.fn.name) && m.key.args[0]?.k === 'lit') {
+                    m.key = E.lit(getStr(m.key.args[0].v));
+                  }
+                  if (m.computed && m.key && m.key.k === 'lit' && typeof m.key.v === 'string' && ID.test(m.key.v)) {
+                    m.computed = false;
+                    m.key = m.key.v;
+                    if (m.fn?.info) m.fn.info.name = m.key;
+                  }
+                  if (m.fn?.info) cleanScope(m.fn.info.body, aliases);
+                }
+              }
+              cleanScope(n.info.body, aliases);
+            }
+          });
+          o[k] = mapExpr(o[k], n => {
+            if (n.k === 'index' && n.key.k === 'lit' && typeof n.key.v === 'string' && ID.test(n.key.v)) {
+              return E.member(n.obj, n.key.v);
+            }
+            if ((n.k === 'member' || (n.k === 'index' && n.key.k === 'lit')) && n.obj.k === 'obj') {
+              const prop = n.k === 'member' ? n.prop : n.key.v;
+              const found = n.obj.props.find(p => !p.computed && p.key === prop);
+              if (found && found.value.k === 'lit') return E.lit(found.value.v);
+            }
+            return null;
+          });
+        }
+        for (const b of childBlocks(s)) walkBlocks(b);
+
+        if (s.t === 'if' && s.c.k === 'bin' && (s.c.op === '===' || s.c.op === '!==' || s.c.op === '==' || s.c.op === '!=') && s.c.l.k === 'lit' && s.c.r.k === 'lit') {
+          const res = s.c.op.startsWith('=') ? s.c.l.v === s.c.r.v : s.c.l.v !== s.c.r.v;
+          const branch = res ? s.a : (s.b || []);
+          list.splice(i, 1, ...branch);
+          i--;
+          continue;
+        }
+
+        if (s.t === 'var' && s.e && s.e.k === 'call' && s.e.fn.k === 'member' && s.e.fn.prop === 'split' && s.e.fn.obj.k === 'lit' && typeof s.e.fn.obj.v === 'string' && /^\d+(\|\d+)+$/.test(s.e.fn.obj.v)) {
+          const order = s.e.fn.obj.v.split('|');
+          const wStmt = list[i + 2];
+          if (wStmt && wStmt.t === 'while' && wStmt.body.length >= 1) {
+            const sw = wStmt.body.find(x => x.t === 'switch');
+            if (sw) {
+              const caseMap = new Map();
+              for (const c of sw.cases) {
+                if (c.test && c.test.k === 'lit') {
+                  const cBody = c.body.filter(st => st.t !== 'break' && st.t !== 'continue');
+                  caseMap.set(String(c.test.v), cBody);
+                }
+              }
+              const flat = [];
+              for (const stepKey of order) {
+                if (caseMap.has(stepKey)) flat.push(...caseMap.get(stepKey));
+              }
+              list.splice(i, 3, ...flat);
+              i--;
+              continue;
+            }
+          }
+        }
+      }
+    };
+    walkBlocks(stmts);
+  };
+
+  cleanScope(body, new Set([decFnName]));
+
+  for (let i = 0; i < body.length - 2; i++) {
+    const s0 = body[i], s1 = body[i + 1], s2 = body[i + 2];
+    if (s0.t === 'var' && s0.e?.k === 'fn' && s0.e.info.isClass && s1.t === 'var' && s1.e?.k === 'id' && s1.e.name === s0.name && s2.t === 'expr' && s2.e.k === 'assign' && s2.e.target.k === 'member' && s2.e.target.obj.k === 'id' && s2.e.target.obj.name === 'module' && s2.e.target.prop === 'exports' && s2.e.value.k === 'id' && (s2.e.value.name === s0.name || s2.e.value.name === s1.name)) {
+      s2.e.value = s0.e;
+      body.splice(i, 2);
+      break;
+    }
+  }
+  return true;
 }
 
 function process(info) {
@@ -890,6 +1264,59 @@ function process(info) {
     const c2 = new Map(), w2 = new Map();
     countIds(body, c2, w2);
     inlineBlock(body, c2, w2);
+  }
+  if (deobfuscate0x(info)) {
+    const cleanAfter0x = (fnInfo) => {
+      const b = fnInfo.body;
+      const fixIndex = (list) => {
+        for (const st of list) for (const cb of childBlocks(st)) fixIndex(cb);
+        for (let i = 0; i + 1 < list.length; i++) {
+          const s0 = list[i], s1 = list[i + 1];
+          if (s0.t === 'var' && isTemp(s0.name) && s0.e?.k === 'lit' && typeof s0.e.v === 'string' && ID.test(s0.e.v) &&
+              s1.t === 'expr' && s1.e.k === 'assign' && s1.e.op === '=' && s1.e.target.k === 'index' && s1.e.target.key.k === 'id' && s1.e.target.key.name === s0.name &&
+              s1.e.value.k === 'bin' && (s1.e.value.op === '+' || s1.e.value.op === '-') && s1.e.value.r.k === 'lit' && s1.e.value.r.v === 1 &&
+              s1.e.value.l.k === 'index' && JSON.stringify(s1.e.value.l.obj) === JSON.stringify(s1.e.target.obj) && s1.e.value.l.key.k === 'id' && s1.e.value.l.key.name === s0.name) {
+            list.splice(i, 2, { t: 'expr', e: { k: 'un', op: s1.e.value.op === '+' ? '++' : '--', e: E.member(s1.e.target.obj, s0.e.v), post: true }, pos: s1.pos });
+            i--;
+          }
+        }
+        eachExprDeep(list, (o, k) => {
+          o[k] = mapExpr(o[k], n => {
+            if (n.k === 'index' && n.key.k === 'lit' && typeof n.key.v === 'string' && ID.test(n.key.v)) return E.member(n.obj, n.key.v);
+            return null;
+          });
+        });
+      };
+      for (let pass = 0; pass < 3; pass++) {
+        foldShortCircuit(b);
+        const cd = new Map(), wd = new Map();
+        countIds(b, cd, wd);
+        inlineBlock(b, cd, wd);
+        fixIndex(b);
+      }
+      foldDecls(b);
+      for (let pass = 0; pass < 3; pass++) {
+        foldShortCircuit(b);
+        const cd2 = new Map(), wd2 = new Map();
+        countIds(b, cd2, wd2);
+        inlineBlock(b, cd2, wd2);
+        fixIndex(b);
+      }
+      foldCompoundAssign(b);
+      for (let pass = 0; pass < 2; pass++) {
+        const cd3 = new Map(), wd3 = new Map();
+        countIds(b, cd3, wd3);
+        inlineBlock(b, cd3, wd3);
+      }
+      recoverParams(fnInfo);
+      eachExprDeep(b, (o, k) => walkExpr(o[k], n => {
+        if (n.k === 'fn') {
+          if (n.info) cleanAfter0x(n.info);
+          if (n.info?.methods) for (const m of n.info.methods) if (m.fn?.info) cleanAfter0x(m.fn.info);
+        }
+      }));
+    };
+    cleanAfter0x(info);
   }
   {
     const c3 = new Map(), w3 = new Map();
