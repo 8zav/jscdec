@@ -67,8 +67,16 @@ When a `.jsc` file references custom/unindexed `RO_SPACE` constants, `jscdec` **
 node bin/jscdec.js path/to/build-stage -o out/ --runtime "path/to/electron.exe"
 ```
 
-> **Security Note on `electron.exe`:**
-> If you place an `electron.exe` inside `bin/` or `tools/` (or download one from a release), you can verify its authenticity against the official [Electron GitHub Releases](https://github.com/electron/electron/releases) (`SHASUMS256.txt`) or simply install the official binary yourself via `npm i -D electron@32.3.3` instead of using a pre-bundled `.exe`.
+> **Security & Verification Note on `tools/electron.exe`:**
+> This repository includes the official, unmodified **Electron 32 (`electron.exe`)** binary inside `tools/electron.exe` (via Git LFS) so `jscdec` works out of the box without any extra setup.
+> - **File:** `tools/electron.exe`
+> - **SHA-256:** `217C7ABC77AAA868B9423FF3E6E8F40F62633CCC4121786FAC64E481AEF3429D`
+> - **Verify locally (PowerShell):** `Get-FileHash tools\electron.exe -Algorithm SHA256`
+>
+> If you prefer not to run the bundled binary, you can delete `tools/electron.exe` and either:
+> 1. Let `jscdec` auto-detect the target application's own Electron executable,
+> 2. Pass your own binary via `--runtime "path/to/electron.exe"`, or
+> 3. Install the official Electron package directly from npm (`npm i -D electron@32`).
 
 ---
 
@@ -146,6 +154,7 @@ Pass the decompiled `.js` output to an LLM (Claude, GPT, Gemini, Cursor) with a 
 ├── templates/
 │   └── oracle-v12.8.jsc     # Template code cache for live RO_SPACE oracle resolution
 └── tools/
+    ├── electron.exe         # Bundled official Electron 32 runtime for RO_SPACE oracle
     ├── dump.js              # Disassembly & heap inspection utility
     └── gen-opcodes.js       # Opcode table generator for other V8 builds
 ```
