@@ -28,6 +28,12 @@
 
 **[https://jsc-decompiler.vercel.app](https://jsc-decompiler.vercel.app)**
 
+
+
+https://github.com/user-attachments/assets/98a98f6a-83f6-49f1-8a08-1fe047629554
+
+
+
 The web version runs client-side; according to the project, files are not uploaded to a server.
 
 ## Contents
