@@ -465,6 +465,10 @@ function shapeLoops(list) {
               }
               const last = arr[arr.length - 1];
               if (last && last.t === 'try' && last.catchBody) stripLoopLatch(last.catchBody);
+              if (last && last.t === 'if') {
+                if (last.a) stripLoopLatch(last.a);
+                if (last.b) stripLoopLatch(last.b);
+              }
             };
             stripLoopLatch(innerBody);
             const forStmt = {
@@ -618,7 +622,7 @@ function recoverParams(info) {
     } else if (s.t === 'var' && isTemp(s.name) && s.e && s.e.k === 'cond' && s.e.c.k === 'bin' && s.e.c.op === '===' && s.e.c.l.k === 'id' && isParam(s.e.c.l.name) && s.e.c.r.k === 'undef' && s.e.b.k === 'id' && s.e.b.name === s.e.c.l.name && info.params.includes(s.e.c.l.name)) {
       const { expr } = require('./ast');
       const idx = info.params.indexOf(s.e.c.l.name);
-      const pName = (info.name && FN_PARAM_HINTS[info.name]?.[idx]) || (info.kind && /Ctor/.test(info.kind) && idx === 0 ? 'opts' : s.e.c.l.name);
+      const pName = (info.name && FN_PARAM_HINTS[info.name]?.[idx]) || s.e.c.l.name;
       info.params[idx] = `${pName} = ${expr(s.e.a)}`;
       for (let k = i + 1; k < body.length; k++) {
         for (const [o, key] of stmtExprs(body[k])) o[key] = replaceId(o[key], s.name, E.id(pName));
@@ -653,17 +657,30 @@ function inferExprName(e) {
     if (e.fn.k === 'member') {
       const p = e.fn.prop;
       const objName = e.fn.obj.k === 'id' ? e.fn.obj.name : '';
-      if (p === 'readdirSync') return 'entries';
-      if (p === 'statSync') return 'stat';
-      if (p === 'readFileSync') return 'data';
+      if (p === 'readdirSync' || p === 'readdir') return 'entries';
+      if (p === 'statSync' || p === 'stat') return 'stat';
+      if (p === 'readFileSync' || p === 'readFile') return 'data';
       if (p === 'createWriteStream') return 'stream';
+      if (p === 'randomBytes') return 'iv';
+      if (p === 'stringify' && objName === 'JSON') return 'payload';
+      if (p === 'parse' && objName === 'JSON') return 'parsed';
+      if (p === 'digest') {
+        let isHmac = false;
+        walkExpr(e.fn.obj, n => { if (n.k === 'member' && n.prop === 'createHmac') isHmac = true; });
+        return isHmac ? 'sig' : 'hash';
+      }
+      if (p === 'createHmac') return 'hmac';
+      if (p === 'createHash') return 'hash';
       if (p === 'join') return 'fullPath';
+      if (p === 'resolve') return 'resolvedPath';
       if (p === 'dirname') return 'dir';
       if (p === 'basename') return 'base';
       if (p === 'extname') return 'ext';
       if (p === 'relative') return 'relPath';
       if (p === 'now' && objName === 'Date') return 'startTime';
       if (p === 'entries' && objName === 'Object') return 'entries';
+      if (p === 'keys' && objName === 'Object') return 'keys';
+      if (p === 'values' && objName === 'Object') return 'values';
       if (p === 'all' && objName === 'Promise') return 'results';
       if (p === 'get' || p === 'post') return 'res';
       if (p === 'match') return 'match';
@@ -776,37 +793,82 @@ const FN_PARAM_HINTS = {
   startDecryption: ['config'],
 };
 
+function inferFnNoun(fnName) {
+  if (!fnName || typeof fnName !== 'string') return null;
+  const m = /^(?:process|handle|parse|validate|verify|check|hash|load|save|fetch|format|render|create|build|update|delete|remove|find|get|set|compute|calc|encode|decode|encrypt|decrypt|sign)([A-Z][a-zA-Z0-9]*?)(?:And[A-Z].*)?$/.exec(fnName);
+  if (!m) return null;
+  const noun = m[1][0].toLowerCase() + m[1].slice(1);
+  if (noun === 'payload' || noun === 'and') return null;
+  return ID.test(noun) && !RESERVED.has(noun) ? noun : null;
+}
+
 function rename(info, usedOuter = new Set(), outerObfMap = new Map()) {
   const names = new Set(usedOuter);
   const propHints = new Map();
+  const paramUsageHints = new Map();
+  const hasTokenStr = [];
   const collect = (body) => eachExprDeep(body, (o, k) => walkExpr(o[k], n => {
     if (n.k === 'id' && !isTemp(n.name) && !isParam(n.name) && !isObfName(n.name)) names.add(n.name);
+    if (n.k === 'lit' && typeof n.v === 'string' && /token/i.test(n.v)) hasTokenStr.push(true);
     if (n.k === 'fn' && n.info) {
       if (n.info.methods) for (const m of n.info.methods) if (!m.computed && typeof m.key === 'string' && !m.fn.info.name) m.fn.info.name = m.key;
     }
+    if (n.k === 'assign' && n.op === '=' && n.target.k === 'member' && n.target.obj.k === 'id' && n.target.obj.name === 'this' && ID.test(n.target.prop) && n.value.k === 'id' && (isParam(n.value.name) || isObfName(n.value.name))) {
+      if (!paramUsageHints.has(n.value.name)) paramUsageHints.set(n.value.name, n.target.prop);
+    }
     if (n.k === 'obj') {
       for (const p of n.props) {
-        if (!p.computed && typeof p.key === 'string' && ID.test(p.key) && p.value?.k === 'id' && (isTemp(p.value.name) || isObfName(p.value.name))) {
+        if (!p.computed && typeof p.key === 'string' && ID.test(p.key) && p.value?.k === 'id' && (isTemp(p.value.name) || isObfName(p.value.name) || isParam(p.value.name))) {
           propHints.set(p.value.name, p.key);
+          if (isParam(p.value.name) && !paramUsageHints.has(p.value.name)) paramUsageHints.set(p.value.name, p.key);
         }
+      }
+    }
+    if (n.k === 'call' && n.fn.k === 'member') {
+      const p = n.fn.prop;
+      const a0 = n.args[0];
+      if ((p === 'readFile' || p === 'readFileSync' || p === 'writeFile' || p === 'writeFileSync' || p === 'statSync' || p === 'existsSync' || p === 'unlinkSync') && a0?.k === 'id' && isParam(a0.name)) {
+        paramUsageHints.set(a0.name, 'filePath');
+      }
+      if ((p === 'readdir' || p === 'readdirSync' || p === 'mkdirSync') && a0?.k === 'id' && isParam(a0.name)) {
+        paramUsageHints.set(a0.name, 'dirPath');
+      }
+      if (p === 'split' && n.fn.obj.k === 'id' && isParam(n.fn.obj.name) && !paramUsageHints.has(n.fn.obj.name)) {
+        paramUsageHints.set(n.fn.obj.name, hasTokenStr.length ? 'token' : 'str');
+      }
+    }
+    if (n.k === 'member' && n.obj.k === 'id' && isParam(n.obj.name)) {
+      if (n.prop === 'length' && !paramUsageHints.has(n.obj.name)) {
+        paramUsageHints.set(n.obj.name, inferFnNoun(info.name) || 'items');
+      } else if (n.prop !== 'length' && !paramUsageHints.has(n.obj.name)) {
+        paramUsageHints.set(n.obj.name, 'options');
       }
     }
   }));
   collect(info.body);
+  if (hasTokenStr.length) {
+    for (const [k, v] of paramUsageHints) if (v === 'str') paramUsageHints.set(k, 'token');
+  }
 
   const paramMap = new Map();
   const hints = (info.name && FN_PARAM_HINTS[info.name]) || null;
   (info.params || []).forEach((p, idx) => {
-    if (!isParam(p) && !isObfName(p)) { names.add(p); return; }
+    const mDef = /^([a-zA-Z_$][\w$]*)\s*=\s*(.+)$/s.exec(p);
+    const rawP = mDef ? mDef[1] : p;
+    const defRhs = mDef ? mDef[2] : null;
+    if (!isParam(rawP) && !isObfName(rawP)) { names.add(rawP); return; }
     let cand = hints && hints[idx] ? hints[idx] : null;
+    if (!cand && paramUsageHints.has(rawP)) cand = paramUsageHints.get(rawP);
+    if (!cand && defRhs === '{}') cand = 'options';
+    if (!cand && idx === 0 && info.name) cand = inferFnNoun(info.name);
     if (!cand && info.kind && /Ctor/.test(info.kind) && idx === 0) cand = 'opts';
-    if (!cand && isObfName(p)) cand = 'a' + idx;
+    if (!cand && isObfName(rawP)) cand = 'a' + idx;
     if (cand && !names.has(cand) && !RESERVED.has(cand)) {
-      info.params[idx] = cand;
-      paramMap.set(p, cand);
+      info.params[idx] = defRhs ? `${cand} = ${defRhs}` : cand;
+      paramMap.set(rawP, cand);
       names.add(cand);
     } else {
-      names.add(p);
+      names.add(rawP);
     }
   });
 
@@ -895,7 +957,9 @@ function rename(info, usedOuter = new Set(), outerObfMap = new Map()) {
     for (const s of body) {
       if (s.t === 'fndecl') rename(s.info, names, obfMap);
       if (s.t === 'var' && s.destruct) {
-        s.destruct = s.destruct.map((n, idx) => (isTemp(n) || isObfName(n)) ? allocName(n, idx === 0 ? 'k' : 'v') : n);
+        const isSplit = s.e && s.e.k === 'call' && s.e.fn.k === 'member' && s.e.fn.prop === 'split';
+        const splitHints = s.destruct.length === 3 ? ['part1', 'part2', 'part3'] : ['part1', 'part2', 'part3', 'part4'];
+        s.destruct = s.destruct.map((n, idx) => (isTemp(n) || isObfName(n)) ? allocName(n, isSplit ? splitHints[idx] : (idx === 0 ? 'k' : 'v')) : n);
         s.name = '[' + s.destruct.join(', ') + ']';
       } else if (s.t === 'var' && (isTemp(s.name) || isObfName(s.name))) {
         const hint = propHints.get(s.name) || inferExprName(s.e);
@@ -1327,6 +1391,11 @@ function process(info) {
   foldCompoundAssign(body);
   shapeLoops(body);
   foldOptionalChaining(body);
+  {
+    const c4 = new Map(), w4 = new Map();
+    countIds(body, c4, w4);
+    inlineBlock(body, c4, w4);
+  }
   recoverParams(info);
   applyTemplates(body);
   reorderHoistedFunctions(body);
