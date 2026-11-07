@@ -23,7 +23,7 @@
 
 ## Web Decompiler
 
-Drop a `.jsc` snapshot, an Electron `.asar` archive, or a packaged Electron `.exe` binary directly into the browser at **[https://jsc-decompiler.vercel.app](https://jsc-decompiler.vercel.app)**. Everything runs 100% client-side in memory.
+Drop a `.jsc` snapshot, an Electron `.asar` archive, or a packaged Electron `.exe` binary directly into the browser.
 
 https://github.com/user-attachments/assets/98a98f6a-83f6-49f1-8a08-1fe047629554
 
