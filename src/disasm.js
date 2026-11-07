@@ -1,19 +1,30 @@
 'use strict';
 const OPS = require('./opcodes.json');
-const OPS_W8 = (() => {
+const filterOps = (base, rm = [], addAfter = {}, addBefore = {}) => {
   const out = [];
-  for (const o of OPS) {
-    if (o.name === 'LdaCurrentContextSlot') {
-      out.push({ name: 'LdaScriptContextSlot', ops: ['kReg', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' });
-      out.push({ name: 'LdaImmutableScriptContextSlot', ops: ['kReg', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' });
-    }
+  for (const o of base) {
+    if (addBefore[o.name]) for (const x of addBefore[o.name]) out.push({ ...x });
+    if (rm.includes(o.name)) continue;
     out.push({ ...o });
-    if (o.name === 'LdaLookupContextSlot') out.push({ name: 'LdaLookupScriptContextSlot', ops: ['kIdx', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' });
-    if (o.name === 'LdaLookupContextSlotInsideTypeof') out.push({ name: 'LdaLookupScriptContextSlotInsideTypeof', ops: ['kIdx', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' });
+    if (addAfter[o.name]) for (const x of addAfter[o.name]) out.push({ ...x });
   }
   out.forEach((o, i) => (o.code = i));
   return out;
-})();
+};
+const OPS_W8 = filterOps(OPS, [], {
+  LdaImmutableCurrentContextSlot: [{ name: 'LdaCurrentScriptContextSlot', ops: ['kIdx'], use: 'kWriteAccumulator' }],
+  LdaLookupContextSlot: [{ name: 'LdaLookupScriptContextSlot', ops: ['kIdx', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' }],
+  LdaLookupContextSlotInsideTypeof: [{ name: 'LdaLookupScriptContextSlotInsideTypeof', ops: ['kIdx', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' }],
+}, {
+  LdaCurrentContextSlot: [{ name: 'LdaScriptContextSlot', ops: ['kReg', 'kIdx', 'kUImm'], use: 'kWriteAccumulator' }],
+});
+const OPS_V124 = filterOps(OPS, ['JumpIfForInDoneConstant', 'JumpIfForInDone'], {
+  ForInPrepare: [{ name: 'ForInContinue', ops: ['kReg', 'kReg'], use: 'kWriteAccumulator' }],
+});
+const OPS_V122 = filterOps(OPS_V124, ['StaScriptContextSlot', 'StaCurrentScriptContextSlot', 'GetEnumeratedKeyedProperty']);
+const OPS_V114 = filterOps(OPS_V122, ['ConstructForwardAllArgs']);
+const OPS_V108 = filterOps(OPS_V114, ['ToBoolean']);
+const TABLES = { 0xa9: OPS_V108, 0xaa: OPS_V114, 0xab: OPS_V122, 0xae: OPS_V124, 0xaf: OPS, 0xb3: OPS_W8, v124: OPS_V124, w8: OPS_W8 };
 const byCode = OPS;
 
 const SCALABLE = new Set(['kReg', 'kRegOut', 'kRegList', 'kRegOutList', 'kRegPair', 'kRegOutPair', 'kRegOutTriple', 'kRegInOut', 'kIdx', 'kUImm', 'kImm', 'kRegCount', 'kNativeContextIndex']);
@@ -38,7 +49,7 @@ function regName(op) {
 const regCount = (ty) => ({ kRegPair: 2, kRegOutPair: 2, kRegOutTriple: 3, kRegInOut: 1, kReg: 1, kRegOut: 1 }[ty] || 0);
 
 function disasm(bytes, w8 = false) {
-  const tbl = (w8 || bytes.w8) ? OPS_W8 : byCode;
+  const tbl = TABLES[bytes.opTable] || (w8 || bytes.w8 ? OPS_W8 : byCode);
   const out = [];
   let p = 0;
   while (p < bytes.length) {
@@ -55,7 +66,9 @@ function disasm(bytes, w8 = false) {
     for (const ty of def.ops) {
       const size = SCALABLE.has(ty) ? scale : (FIXED[ty] || 1);
       const signed = SIGNED.has(ty) || REGISTERISH.has(ty);
-      ins.ops.push(rd(bytes, p, size, signed));
+      let v = rd(bytes, p, size, signed);
+      if (bytes.r0 === -6 && REGISTERISH.has(ty) && v <= -6) v -= 1;
+      ins.ops.push(v);
       p += size;
     }
     ins.len = p - start;

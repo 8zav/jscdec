@@ -120,7 +120,7 @@ P.isUpdateJump = function (t, l) {
 P.doJump = function (ins, i, end, st, out, loop) {
   this.flush(st, out);
   const t = this.jt(ins);
-  if (st.token && t === st.token.fin.fb) {
+  if (st.token && (t === st.token.fin.fb || t === st.token.fin.fb2)) {
     const { k, fin } = st.token; st.token = null;
     const ent = fin.entries.find(e => e.k === k);
     if (ent) { const s2 = this.clone(st); this.walk(ent.start, ent.end, s2, out, loop); }
@@ -361,7 +361,7 @@ P.buildIf = function (cond, thenStartOrIdx, t, st, out, loop, resumeIdx, merged,
   const lastIdx = this.idxAt(t) - 1;
   const last = this.insns[lastIdx];
   const elseEnd = last && this.isUncond(last) ? this.jt(last) : null;
-  const isFin = elseEnd !== null && this.finStack && this.finStack.some(f => f.fb === elseEnd);
+  const isFin = elseEnd !== null && this.finStack && this.finStack.some(f => f.fb === elseEnd || f.fb2 === elseEnd);
   const pastEnd = elseEnd !== null && ((end !== undefined && elseEnd > end) || (loop && loop.cont > 0 && elseEnd > loop.cont));
   const hasElse = elseEnd !== null && elseEnd > t && !this.isLoopTarget(elseEnd, loop) && !isFin && !pastEnd && lastIdx >= this.at.get(thenStart);
   const thenEnd = hasElse ? last.off : t;
@@ -404,7 +404,7 @@ P.trySwitch = function (ins, i, Jexpr, st, out, loop, end) {
   let j = i + 1;
   for (;;) {
     const a = this.insns[j], b = this.insns[j + 1], c = this.insns[j + 2];
-    if (!(a && b && c && /^Lda/.test(a.name) && b.name === prev.name && b.ops[0] === tagOp && /^JumpIf(ToBoolean)?True$/.test(c.name))) break;
+    if (!(a && b && c && /^Lda/.test(a.name) && b.name === prev.name && b.ops[0] === tagOp && /^JumpIf(ToBoolean)?True(Constant)?$/.test(c.name))) break;
     const s2 = this.clone(st); s2.acc = null; const tmp = [];
     this.step(a, j, end, s2, tmp, loop);
     if (!s2.acc || tmp.length) return null;
@@ -563,7 +563,7 @@ P.parseFinallyPrologue = function (off) {
   const isS = (n) => n === 'Star' || /^Star\d+$/.test(n);
   if (!(isS(q[0]) && q[1] === 'LdaZero' && isS(q[2]) && q[3] === 'LdaTheHole' && q[4] === 'SetPendingMessage' && isS(q[5]))) return null;
   const nx = this.insns[i + 6];
-  return { exc: starReg(this.insns[i]), tok: starReg(this.insns[i + 2]), msg: starReg(this.insns[i + 5]), fb: nx ? nx.off : this.bc.length };
+  return { exc: starReg(this.insns[i]), tok: starReg(this.insns[i + 2]), msg: starReg(this.insns[i + 5]), fb: nx ? nx.off : this.bc.length, fb2: this.insns[i + 3].off };
 };
 P.parseDispatch = function (fb, tok, exc, msg) {
   let i = this.at.get(fb);
@@ -585,27 +585,39 @@ P.parseDispatch = function (fb, tok, exc, msg) {
         const nxt = sorted.find(v => v > t.start);
         entries.push({ k: t.k, start: t.start, end: nxt !== undefined && nxt < cont ? nxt : cont });
       }
-      return { dispatchStart: x.off, entries, cont };
+      const ds = (j >= 2 && this.insns[j - 2].name === 'Ldar' && this.insns[j - 2].ops[0] === msg && this.insns[j - 1].name === 'SetPendingMessage') ? this.insns[j - 2].off : x.off;
+      return { dispatchStart: ds, entries, cont };
     }
   }
+  let dispatchStart = null, jf = null;
   for (; i !== undefined && i < this.insns.length - 1; i++) {
     const a = this.insns[i], b = this.insns[i + 1];
-    const c = this.insns[i + 2], d = this.insns[i + 3];
-    if (a.name === 'LdaZero' && b.name === 'TestReferenceEqual' && b.ops[0] === tok && c && c.name === 'JumpIfFalse' && d && d.name === 'Ldar' && d.ops[0] === msg) break;
+    const c = this.insns[i + 2], d = this.insns[i + 3], e = this.insns[i + 4];
+    if (a.name === 'LdaZero' && b.name === 'TestReferenceEqual' && b.ops[0] === tok && c && /^JumpIfFalse(Constant)?$/.test(c.name) && d && d.name === 'Ldar' && d.ops[0] === msg) {
+      dispatchStart = a.off; jf = c; break;
+    }
+    if (a.name === 'Ldar' && a.ops[0] === msg && b && b.name === 'SetPendingMessage' && c && c.name === 'LdaZero' && d && d.name === 'TestReferenceEqual' && d.ops[0] === tok && e && /^JumpIfFalse(Constant)?$/.test(e.name)) {
+      dispatchStart = a.off; jf = e; break;
+    }
   }
-  if (i === undefined || i >= this.insns.length - 1) return null;
-  const dispatchStart = this.insns[i].off;
-  const jf = this.insns[i + 2];
+  if (!jf) return null;
   const entries = [];
   let idx = this.idxAt(this.jt(jf));
   let contOff = this.insns[idx] ? this.insns[idx].off : this.bc.length;
   for (;;) {
     const a = this.insns[idx], b = this.insns[idx + 1], c = this.insns[idx + 2];
-    if (!(a && b && c && a.name === 'LdaSmi' && b.name === 'TestReferenceEqual' && b.ops[0] === tok && c.name === 'JumpIfFalse')) break;
+    if (!(a && b && c && a.name === 'LdaSmi' && b.name === 'TestReferenceEqual' && b.ops[0] === tok && /^JumpIfFalse(Constant)?$/.test(c.name))) break;
     const endOff = this.jt(c);
     entries.push({ k: a.ops[0], start: c.off + c.len, end: endOff });
     idx = this.idxAt(endOff);
     contOff = this.insns[idx] ? this.insns[idx].off : this.bc.length;
+  }
+  if (!entries.length && this.insns[idx] && this.insns[idx].name === 'Mov') {
+    let rIdx = idx;
+    while (rIdx < idx + 5 && this.insns[rIdx] && this.insns[rIdx].name !== 'Return') rIdx++;
+    if (this.insns[rIdx]?.name === 'Return') {
+      entries.push({ k: 1, start: this.insns[idx].off, end: this.insns[rIdx].off + this.insns[rIdx].len });
+    }
   }
   return { dispatchStart, entries, cont: contOff };
 };
@@ -684,7 +696,7 @@ P.doForOf = function (h, st, out, loop) {
   const stBody = this.clone(st);
   for (const ir of itemRegs) stBody.regs.set(ir, E.id(item));
   stBody.acc = null;
-  const fin = { tok: pro.tok, exc: pro.exc, fb: pro.fb, entries: disp.entries, cont: disp.cont, forOf: true };
+  const fin = { tok: pro.tok, exc: pro.exc, fb: pro.fb, fb2: pro.fb2, entries: disp.entries, cont: disp.cont, forOf: true };
   (this.finStack = this.finStack || []).push(fin);
   const ctx = { header: h.start, exit: jl.off + jl.len, exit2: disp.cont, cont: jl.off, parent: loop, label: null };
   const body = [];
@@ -708,7 +720,7 @@ P.tryFinally = function (h, st, out, loop) {
   const sameH = this.handlers.filter(x => x.handler === h.handler);
   sameH.forEach(x => this.doneTry.add(x));
   const tryEnd = Math.max(...sameH.map(x => x.end));
-  const fin = { tok: pro.tok, exc: pro.exc, fb: pro.fb, entries: disp.entries, cont: disp.cont };
+  const fin = { tok: pro.tok, exc: pro.exc, fb: pro.fb, fb2: pro.fb2, entries: disp.entries, cont: disp.cont };
   (this.finStack = this.finStack || []).push(fin);
   this.flush(st, out);
   const stT = this.clone(st); const oT = [];

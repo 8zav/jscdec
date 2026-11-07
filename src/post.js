@@ -405,7 +405,7 @@ function dropGuards(list) {
   for (const s of list) for (const b of childBlocks(s)) dropGuards(b);
   for (let i = list.length - 1; i >= 0; i--) {
     const s = list[i];
-    if (s.t === 'if' && !s.b && s.a.every(x => x.t === 'expr' && x.e.k === 'call' && x.e.fn.k === 'id' && /^%Runtime160$/.test(x.e.fn.name))) list.splice(i, 1);
+    if (s.t === 'if' && !s.b && s.a.every(x => x.t === 'expr' && x.e.k === 'call' && x.e.fn.k === 'id' && /^%Runtime(160|206)$/.test(x.e.fn.name))) list.splice(i, 1);
     if (s.t === 'if' && !s.b && s.c.k === 'bin' && s.c.op === '===' && s.c.l.k === 'lit' && s.c.r.k === 'lit' && s.c.l.v === s.c.r.v && s.a.length === 1 && s.a[0].t === 'continue') {
       if (i + 1 < list.length && list[i + 1].t === 'throw') list.splice(i, 2);
       else list.splice(i, 1);

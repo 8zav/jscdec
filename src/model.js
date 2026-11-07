@@ -12,10 +12,12 @@ function load(buf) {
 
 function strOf(h, o, refs) {
   const m = mapOf(h, o);
-  if (m === MAP.ONE_BYTE_STR || m === MAP.TWO_BYTE_STR || m === MAP.TWO_BYTE_STR_W8) {
+  const sfiMap = h.objs[0] ? mapOf(h, h.objs[0]) : 20;
+  const isOneByte = m === sfiMap - 2 || m === sfiMap - 3;
+  if (isOneByte || m === MAP.TWO_BYTE_STR || m === MAP.TWO_BYTE_STR_W8) {
     const len = h.W === 8 ? o.words[1].hi : o.words[2].v;
     const bytes = rawBytes(o, h.W === 8 ? 2 : 3, o.size);
-    return m === MAP.ONE_BYTE_STR ? bytes.subarray(0, len).toString('latin1') : bytes.subarray(0, len * 2).toString('utf16le');
+    return isOneByte ? bytes.subarray(0, len).toString('latin1') : bytes.subarray(0, len * 2).toString('utf16le');
   }
   return null;
 }

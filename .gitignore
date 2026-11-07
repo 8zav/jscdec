@@ -1,5 +1,8 @@
 node_modules/
 out/
 web/
+promo-project/
+promo-video.mp4
+promo-thumbnail.png
 *.log
 .DS_Store

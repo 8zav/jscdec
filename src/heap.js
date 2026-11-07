@@ -4,13 +4,16 @@ const HEADER = 0x20;
 class Heap {
   constructor(buf, opts = {}) {
     this.buf = buf;
-    this.pos = HEADER;
-    this.W = opts.wordSize || (buf.length >= 0x30 && buf.readUInt32LE(0x28) === 0 && buf.readUInt32LE(0x2c) > 0 ? 8 : 4);
+    this.start = (buf.length >= 0x20 && buf[0x18] === 0x01 && buf.readUInt32LE(0x14) === 0) ? 0x18 : HEADER;
+    this.pos = this.start;
+    this.W = opts.wordSize || (buf.length >= 0x32 && buf[0x27] === 0x60 && buf.readUInt32LE(0x28) === 0 && buf.readUInt32LE(0x2c) > 0 && buf[0x2c] !== 0x60 && buf[0x30] <= 0x05 ? 8 : 4);
+    this.shift = (this.W === 4 && buf[this.start + 5] === 0x06) ? 1 : 0;
+    this.selfTag = (this.W === 4 && buf[this.start + 3] === 0x1c) ? 0x1d : (this.W === 4 && buf[this.start + 3] === 0x1d ? 0x1e : -1);
     this.objs = [];
     this.hot = new Array(8).fill(null);
     this.hotIdx = 0;
     this.sourceLen = buf.readUInt32LE(8);
-    this.payloadLen = buf.readUInt32LE(20);
+    this.payloadLen = buf.readUInt32LE(this.start === 0x18 ? 16 : 20);
   }
   u8() { return this.buf[this.pos++]; }
   varint() {
@@ -25,7 +28,8 @@ class Heap {
   parse() {
     const first = this.u8();
     const root = this.readObject(first);
-    if (this.buf[this.pos] !== 0x0b) throw new Error('snapshot did not end on Synchronize @0x' + this.pos.toString(16));
+    const end = this.buf[this.pos];
+    if (end !== 0x0a && end !== 0x0b && end !== 0x0c) throw new Error('snapshot did not end on Synchronize @0x' + this.pos.toString(16));
     return root;
   }
   readObject(space) {
@@ -40,17 +44,20 @@ class Heap {
   item(o, i, indirect) {
     const at = this.pos;
     const tag = this.u8();
-    if (tag <= 0x03) { const c = this.readObject(tag); this.put(o, i, { t: 'obj', id: c.id }); return 1; }
-    switch (tag) {
+    const s = this.shift;
+    if (tag <= 0x03 - s) { const c = this.readObject(tag); this.put(o, i, { t: 'obj', id: c.id }); return 1; }
+    switch (tag + s) {
       case 0x04: { const id = this.varint(); const e = { t: 'obj', id }; this.addHot(e); this.put(o, i, e); return 1; }
       case 0x05: { const chunk = this.varint(), off = this.varint(); this.put(o, i, { t: 'ro', chunk, off }); return 1; }
       case 0x06: { const idx = this.varint(); this.put(o, i, { t: 'sc', idx }); return 1; }
       case 0x07: { const idx = this.varint(); const e = { t: 'root', idx }; this.addHot(e); this.put(o, i, e); return 1; }
       case 0x08: { const idx = this.varint(); this.put(o, i, { t: 'att', idx }); return 1; }
       case 0x0c: { const n = this.varint() + 18; const b = this.u8(); for (let k = 0; k < n; k++) this.put(o, i + k, { t: 'root', idx: b & 0x1f }); return n; }
-      case 0x11: { const n = this.varint(); this.raw(o, i, n); return n; }
-      case 0x18: case 0x1d: case 0x1f: case 0x21: return this.item(o, i, tag);
-      case 0x1e: this.put(o, i, { t: 'self' }); return 1;
+      case 0x10: case 0x11: { const n = this.varint(); this.raw(o, i, n); return n; }
+    }
+    if (tag >= 0x15 && tag <= 0x21) {
+      if (tag === this.selfTag) { this.put(o, i, { t: 'self' }); return 1; }
+      return this.item(o, i, tag);
     }
     if (tag >= 0x40 && tag <= 0x5f) { this.put(o, i, { t: 'root', idx: tag - 0x40 }); return 1; }
     if (tag >= 0x60 && tag <= 0x7f) { const n = tag - 0x5f; this.raw(o, i, n); return n; }

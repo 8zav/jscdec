@@ -50,7 +50,7 @@ function decompileFile(file, opts = {}) {
   const info = dec.run();
   post.process(info);
   post.rename(info);
-  const v8ver = prog.h.W === 8 ? 'V8 12.x (x64)' : 'V8 12.8 (Electron 32)';
+  const v8ver = prog.detectVersion();
   const header = opts.noHeader ? '' : `// Decompiled from: ${path.basename(file)}\n// Detected: ${v8ver}\n\n`;
   return header + info.body.map(s => stmt(s, '')).filter(x => x !== null).join('\n') + '\n';
 }

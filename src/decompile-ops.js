@@ -27,22 +27,23 @@ P.constExpr = function (v, st) {
     case 'objdesc': return this.objLiteral(v.obj, st);
     case 'arrdesc': return this.arrLiteral(v.obj);
     case 'classdesc': return { k: 'classdesc', obj: v.obj };
-    default: return E.raw('/*const:' + (v.type || v.kind) + '*/');
+    default: return E.raw('undefined /*const:' + (v.type || v.kind) + '*/');
   }
 };
 P.closure = function (sfiObj, st) {
   const child = this.prog.sfi(sfiObj);
-  if (!child.bc) return E.raw('/*lazy function*/');
+  if (!child.bc) return E.raw('(function () { /*lazy function*/ })');
   const d = new FnDec(this.prog, child, st.chain, { ...this.cfg, moduleWrapper: false });
   const info = d.run();
   return E.fn(info);
 };
 P.objLiteral = function (o) {
   const props = [];
-  const n = (o.size - 4) >> 1;
+  const start = this.prog.bcMap <= 43 ? 3 : 4;
+  const n = (o.size - start) >> 1;
   for (let i = 0; i < n; i++) {
-    const kv = this.prog.val(o.words[4 + 2 * i]);
-    const vv = this.prog.val(o.words[5 + 2 * i]);
+    const kv = this.prog.val(o.words[start + 2 * i]);
+    const vv = this.prog.val(o.words[start + 1 + 2 * i]);
     const key = kv.kind === 'str' ? kv.value : kv.kind === 'smi' ? kv.value : '?';
     let value;
     if (vv.kind === 'uninit' || vv.kind === 'hole') value = null; else value = this.constExpr(vv, { chain: this.chain0 });
@@ -141,7 +142,7 @@ P.step = function (ins, i, end, st, out, loop, ifctx) {
     case 'LdaGlobal': case 'LdaGlobalInsideTypeof': { const v = this.poolv(o[0]); put(E.id(this.keyOf(v))); return nextI; }
     case 'StaGlobal': { const v = this.poolv(o[0]); this.emitStore(st, out, E.id(this.keyOf(v))); return nextI; }
     case 'LdaContextSlot': case 'LdaImmutableContextSlot': case 'LdaScriptContextSlot': case 'LdaImmutableScriptContextSlot': put(this.ctxVar(st, o[0], o[1], o[2])); return nextI;
-    case 'LdaCurrentContextSlot': case 'LdaImmutableCurrentContextSlot': put(this.ctxVar(st, undefined, o[0], 0)); return nextI;
+    case 'LdaCurrentContextSlot': case 'LdaImmutableCurrentContextSlot': case 'LdaCurrentScriptContextSlot': put(this.ctxVar(st, undefined, o[0], 0)); return nextI;
     case 'StaContextSlot': case 'StaScriptContextSlot': this.emitStore(st, out, this.ctxVar(st, o[0], o[1], o[2])); return nextI;
     case 'StaCurrentContextSlot': case 'StaCurrentScriptContextSlot': this.emitStore(st, out, this.ctxVar(st, undefined, o[0], 0)); return nextI;
     case 'LdaLookupSlot': case 'LdaLookupSlotInsideTypeof': case 'LdaLookupGlobalSlot': case 'LdaLookupGlobalSlotInsideTypeof': put(E.id(this.keyOf(this.poolv(o[0])))); return nextI;
@@ -187,7 +188,25 @@ P.step = function (ins, i, end, st, out, loop, ifctx) {
     case 'ToNumeric': case 'ToName': return nextI;
     case 'ToString': { const a = this.take(st); put(E.tostr(a)); return nextI; }
     case 'ToObject': { const a = this.take(st); if (o[0] <= -7) this.setReg(st, o[0], a, out); st.acc = { e: a, used: true }; return nextI; }
-    case 'GetSuperConstructor': put(E.id('super')); return nextI;
+    case 'GetSuperConstructor': {
+      if (this.insns[i + 1]?.name === 'ThrowIfNotSuperConstructor') {
+        let cIns = null, mIdx = -1;
+        for (let k = i + 1; k < Math.min(this.insns.length, i + 15); k++) {
+          if (/^Construct/.test(this.insns[k].name)) cIns = this.insns[k];
+          if (this.insns[k].name === 'Mov' && this.insns[k].ops[1] === 2) { mIdx = k; break; }
+        }
+        if (cIns && mIdx > i) {
+          let args = this.regList(st, cIns.ops[1], cIns.ops[2]);
+          if (cIns.name === 'ConstructWithSpread' && args.length) args[args.length - 1] = E.spread(args[args.length - 1]);
+          this.flush(st, out);
+          out.push({ t: 'expr', e: E.call(E.id('super'), args) });
+          st.acc = null;
+          return mIdx + 1;
+        }
+      }
+      put(E.id('super'));
+      return nextI;
+    }
 
     case 'CallProperty': case 'CallAnyReceiver': case 'CallUndefinedReceiver': case 'CallWithSpread': {
       const callee = R(o[0]); const list = this.regList(st, o[1], o[2]);
@@ -209,7 +228,7 @@ P.step = function (ins, i, end, st, out, loop, ifctx) {
     case 'CallRuntime': case 'CallRuntimeForPair': {
       const args = this.regList(st, o[1], o[2]);
       this.take(st);
-      if (o[0] === 47 && args.length >= 3) {
+      if ((args[0]?.k === 'classdesc' || (o[0] >= 41 && o[0] <= 50)) && args.length >= 3) {
         const cls = this.buildClass(args, st, out);
         if (cls) { this.flush(st, out); st.acc = { e: cls, used: true }; return nextI; }
       }
@@ -235,7 +254,8 @@ P.step = function (ins, i, end, st, out, loop, ifctx) {
     case 'CallJSRuntime': { const args = this.regList(st, o[1], o[2]); put(E.call(E.id('%JSRuntime' + o[0]), args)); return nextI; }
     case 'InvokeIntrinsic': {
       const args = this.regList(st, o[1], o[2]);
-      switch (o[0]) {
+      const id = this.prog.retCode <= 0xae ? ({ 0: 0, 1: 0, 2: 1, 3: 2, 4: 3, 11: 9, 14: 12 }[o[0]] ?? o[0]) : o[0];
+      switch (id) {
         case 1: put({ k: 'raw', text: '/*async-state*/' }); return nextI;
         case 0: put(E.await_(args[1])); return nextI;
         case 3: put(args[1]); return nextI;
@@ -387,6 +407,15 @@ P.buildClass = function (args, st, out) {
       const kv = this.prog.val(d.words[p]);
       if (kv.kind !== 'str' || ['constructor', 'length', 'name', 'prototype'].includes(kv.value)) continue;
       const v1 = this.prog.val(d.words[p + 1]), v2 = this.prog.val(d.words[p + 2]);
+      if (v2.obj && v2.obj.size === 3) {
+        for (const w of [v2.obj.words[1], v2.obj.words[2]]) {
+          const av = this.prog.val(w);
+          if (av.kind === 'smi' && av.value >= 3 && av.value < args.length && val(args[av.value])?.k === 'fn') {
+            methods.push({ idx: av.value, key: kv.value, computed: false, static: isStatic, fn: val(args[av.value]) });
+          }
+        }
+        continue;
+      }
       const idx = (v2.kind === 'smi' && v2.value >= 3 && v2.value < args.length && val(args[v2.value])?.k === 'fn') ? v2.value
                 : (v1.kind === 'smi' && v1.value >= 3 && v1.value < args.length && val(args[v1.value])?.k === 'fn') ? v1.value : -1;
       if (idx >= 3) methods.push({ idx, key: kv.value, computed: false, static: isStatic, fn: val(args[idx]) });
@@ -404,10 +433,11 @@ P.buildClass = function (args, st, out) {
       }
     }
   };
-  scanDesc(cb.obj.words[2], true);
-  scanDesc(cb.obj.words[5], false);
-  scanComp(cb.obj.words[4], true);
-  scanComp(cb.obj.words[7], false);
+  const cs = cb.obj.size === 9 ? 1 : 0;
+  scanDesc(cb.obj.words[2 + cs], true);
+  scanDesc(cb.obj.words[5 + cs], false);
+  scanComp(cb.obj.words[4 + cs], true);
+  scanComp(cb.obj.words[7 + cs], false);
   methods.sort((a, b) => a.idx - b.idx);
   const b = ctor.info.body;
   if (b.length && b[b.length - 1].t === 'return' && b[b.length - 1].e && b[b.length - 1].e.k === 'id' && b[b.length - 1].e.name === 'this') b.pop();
