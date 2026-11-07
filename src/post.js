@@ -995,6 +995,9 @@ function rename(info, usedOuter = new Set(), outerObfMap = new Map()) {
           paramUsageHints.set(n.args[0].name, 'result');
         }
       }
+      if (n.fn.k === 'id' && isParam(n.fn.name) && !paramUsageHints.has(n.fn.name)) {
+        paramUsageHints.set(n.fn.name, 'cb');
+      }
       if (n.fn.k === 'member') {
         const p = n.fn.prop;
         const a0 = n.args[0];
@@ -1006,6 +1009,9 @@ function rename(info, usedOuter = new Set(), outerObfMap = new Map()) {
         }
         if (p === 'split' && n.fn.obj.k === 'id' && isParam(n.fn.obj.name) && !paramUsageHints.has(n.fn.obj.name)) {
           paramUsageHints.set(n.fn.obj.name, hasTokenStr.length ? 'token' : 'str');
+        }
+        if ((p === 'map' || p === 'forEach' || p === 'filter' || p === 'find' || p === 'some' || p === 'every') && n.fn.obj.k === 'id' && isParam(n.fn.obj.name) && !paramUsageHints.has(n.fn.obj.name)) {
+          paramUsageHints.set(n.fn.obj.name, inferFnNoun(info.name) || 'items');
         }
       }
     }
@@ -1112,17 +1118,17 @@ function rename(info, usedOuter = new Set(), outerObfMap = new Map()) {
   const counters = {};
   const allocName = (t, base) => {
     if (map.has(t)) return map.get(t);
-    if (!base) base = propHints.get(t) || assignHints.get(t) || sinkHints.get(t) || (counterVars.has(t) ? 'count' : null);
+    if (!base) base = propHints.get(t) || assignHints.get(t) || sinkHints.get(t) || (counterVars.has(t) ? 'count' : 'val');
     if (base && !RESERVED.has(base) && ID.test(base)) {
       if (!names.has(base)) { names.add(base); map.set(t, base); if (isObfName(t)) obfMap.set(t, base); return base; }
-      for (let k = 2; k <= 15; k++) {
+      for (let k = 2; k <= 99; k++) {
         const cand = base + k;
         if (!names.has(cand)) { names.add(cand); map.set(t, cand); if (isObfName(t)) obfMap.set(t, cand); return cand; }
       }
     }
-    const pre = isObfName(t) ? 'v' : (t[1] || 'v');
+    const pre = isObfName(t) ? 'val' : 'val';
     let n;
-    do { n = (pre === 'v' ? 'v' : pre) + (counters[pre] = (counters[pre] === undefined ? 0 : counters[pre] + 1)); } while (names.has(n));
+    do { n = pre + (counters[pre] = (counters[pre] === undefined ? 2 : counters[pre] + 1)); } while (names.has(n));
     names.add(n);
     map.set(t, n);
     if (isObfName(t)) obfMap.set(t, n);
