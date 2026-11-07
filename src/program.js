@@ -175,8 +175,21 @@ class Program {
     const n = smiv(o.words[3]);
     let p = 4;
     if (!v124 && type !== 5 && type !== 6 && type !== 7) { info.start = smiv(o.words[p]); info.end = smiv(o.words[p + 1]); p += 2; }
-    for (let i = 0; i < n; i++) info.names.push(this.str(o.words[p + i]));
-    p += n;
+    if (n > 0 && o.words[p]?.t === 'obj' && this.str(o.words[p]) === null) {
+      const ht = this.h.objs[o.words[p].id];
+      info.names = new Array(n).fill(null);
+      if (ht && ht.words) {
+        for (let k = 4; k + 1 < ht.words.length; k += 2) {
+          const keyStr = this.str(ht.words[k]);
+          const idxVal = smiv(ht.words[k + 1]);
+          if (keyStr && idxVal != null && idxVal >= 0 && idxVal < n) info.names[idxVal] = keyStr;
+        }
+      }
+      p += 1;
+    } else {
+      for (let i = 0; i < n; i++) info.names.push(this.str(o.words[p + i]));
+      p += n;
+    }
     for (let i = 0; i < n; i++) {
       const v = smiv(o.words[p + i]);
       info.modes.push(MODES[v & 15] || 'let');
@@ -191,6 +204,13 @@ class Program {
     for (const w of rest) {
       const v = this.val(w);
       if (v.kind === 'scope') info.outer = v.obj;
+    }
+    if (v124 && info.start == null && type !== 5 && type !== 6 && type !== 7) {
+      const smis = rest.filter(w => w && w.t === 'raw').map(smiv);
+      if (smis.length >= 2 && smis[smis.length - 2] >= 0 && smis[smis.length - 1] >= smis[smis.length - 2]) {
+        info.start = smis[smis.length - 2];
+        info.end = smis[smis.length - 1];
+      }
     }
     if (rest.length >= 2) { const nm = this.val(rest[0]); if (nm.kind === 'str' && nm.value) info.fnName = nm.value; }
     if (!info.fnName && rest.length >= 3) { const nm = this.val(rest[2]); if (nm.kind === 'str' && nm.value) info.fnName = nm.value; }
