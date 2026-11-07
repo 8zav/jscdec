@@ -2,13 +2,15 @@
   <img src="banner.svg" alt="jscdec — V8 / Bytenode / Electron Bytecode Decompiler" width="100%">
   <br>
 
-  <p><strong>Pure-JavaScript decompiler for Bytenode / V8 <code>SerializedCodeData</code> (<code>.jsc</code>) files, Electron <code>.asar</code> archives, and packaged Electron <code>.exe</code> binaries.</strong></p>
-  <p>Reconstruct readable JavaScript from V8 Ignition bytecode snapshots across <strong>Electron 22–34 (V8 10.8–13.2)</strong> &amp; <strong>Node.js 20–22 x64</strong> — without a custom C++ V8 build.</p>
+  <p><strong>Pure-JavaScript decompiler for V8 <code>SerializedCodeData</code> (<code>.jsc</code>) snapshots, Electron <code>.asar</code> archives, and packaged Electron <code>.exe</code> binaries.</strong></p>
+  <p>Reconstructs readable JavaScript from V8 Ignition bytecode across <strong>Electron 22–34 (V8 10.8–13.2)</strong> and <strong>Node.js 20–22 x64</strong> — zero native C++ dependencies.</p>
 
   <p>
-    <a href="https://jsc-decompiler.vercel.app"><strong>🌐 Try the Web Decompiler</strong></a>
+    <a href="https://jsc-decompiler.vercel.app"><strong>🌐 Web Decompiler</strong></a>
     ·
-    <a href="https://github.com/8zav/jscdec"><strong>⭐ View on GitHub</strong></a>
+    <a href="doc/versions.md"><strong>🧩 Supported Versions</strong></a>
+    ·
+    <a href="doc/example.md"><strong>🧪 Example Output</strong></a>
   </p>
 
   <p>
@@ -24,198 +26,55 @@
 
 ## 🌐 Web Decompiler
 
-**No installation required.** Open the web app, drop a `.jsc` file, an Electron `.asar` archive, or a packaged Electron `.exe` executable into the browser, and decompile it into a clean `.js` or `.zip`.
-
-**[https://jsc-decompiler.vercel.app](https://jsc-decompiler.vercel.app)**
-
-
+Drop a `.jsc` snapshot, an Electron `.asar` archive, or a packaged Electron `.exe` binary directly into the browser at **[https://jsc-decompiler.vercel.app](https://jsc-decompiler.vercel.app)**. Everything runs 100% client-side in memory.
 
 https://github.com/user-attachments/assets/98a98f6a-83f6-49f1-8a08-1fe047629554
 
+## ✨ Overview
 
+- **Multi-Version V8 Snapshot Deserializer**: Supports both 4-byte pointer-compressed heaps (`Electron 22–34` / `V8 10.8–13.2`) and 8-byte uncompressed x64 heaps (`Node.js 20–22`) out of the box using pre-built `RO_SPACE` and `Root` tables.
+- **CFG & AST Reconstruction**: Lifts classes (`extends`/`super`, getters/setters, static fields), `async`/`await`, generators, `try`/`catch`/`finally`, loops (`for`, `for...of`, `for...in`, `while`), `switch`, destructuring, and template literals.
+- **Dataflow Identifier Recovery & Deobfuscation**: Restores closure names from `ScopeInfo` (inline arrays & `NameToIndexHashTable`), infers stack register names through forward/backward def-use analysis, and statically resolves rotated `_0x` string-array obfuscators.
+- **In-Browser `.asar` & `.exe` Unpacker**: Extracts `resources/app.asar` from NSIS / 7-Zip packaged Electron executables via WebAssembly and decompiles all embedded `.jsc` files in one pass.
 
-The web version runs 100% client-side; files never leave your browser.
+## 📚 Documentation
 
-## Contents
+- **[Supported Versions (`doc/versions.md`)](doc/versions.md)** — Full V8, Electron 22–34, and Node.js 20–22 compatibility matrix and snapshot layout details.
+- **[Example Output (`doc/example.md`)](doc/example.md)** — Sample decompiled output and breakdown of AST, control-flow, and identifier recovery passes.
 
-- [Features](#-features)
-- [Supported Versions](#-supported-versions)
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Example Output](#-example-output)
-- [Post-Processing](#-post-processing--ai-code-cleanup)
-- [Project Structure](#-project-structure)
-- [Security and Runtime Verification](#-security-and-runtime-verification)
-
-## ✨ Features
-
-### Runtime and heap support
-
-- **No native build dependencies** — runs on standard Node.js (`>= 18`) and 100% client-side in the browser.
-- **Multi-version V8 & dual heap architecture support:**
-  - **4-byte pointer-compressed V8 snapshots (`Electron 22–34` / `V8 10.8–13.2`):** automatic header (`0x18` / `0x20`), 3-space & 4-space snapshot tag decoding, register frame base (`r0 = -6` / `r0 = -7`), `BytecodeArray` / `ScopeInfo` / `HandlerTable` layout adaptation, and pre-built multi-version `RO_SPACE` & `Root` tables (`templates/ro-multi.json` & `templates/ro-v12.8.json`).
-  - **8-byte uncompressed x64 V8 snapshots (`Node.js 20–22` / `V8 11.3–12.x` & Electron utility workers):** full `W=8` snapshot & `RO_SPACE` table (`templates/ro-v12.4-x64.json`).
-- **In-Browser `.asar` & Packaged Electron `.exe` Unpacker:**
-  - Drop `.jsc` files, `.asar` archives, or packaged Electron `.exe` executables (NSIS / 7-Zip / Electron-Builder Portable) directly into **[https://jsc-decompiler.vercel.app](https://jsc-decompiler.vercel.app)** to auto-detect the Electron packer, extract `resources/app.asar`, decompile & deobfuscate `_0x` string arrays, and download a ready-to-read `.zip`.
-
-### AST and control-flow reconstruction
-
-- CommonJS module wrapper unwrapping: `require`, `module.exports`, `exports`, `__dirname`, and `__filename`.
-- Original declaration ordering through V8 `SourcePositionTable` decoding.
-- Classes, inheritance (`extends` / `super`), static and instance methods, getters, and setters.
-- `async` / `await`, including generator state-machine stripping.
-- `try` / `catch` / `finally`.
-- Structured `for`, `for...of`, `for...in`, `while`, and `switch` statements.
-- Short-circuit logic (`&&`, `||`, `??`), ternaries, optional chaining, template literals, destructuring, and default parameters.
-
-### Semantic recovery
-
-- Recovers function names, class and method names, closure context variables (`ScopeInfo`), and property keys.
-- Infers local and parameter names from call targets and usage context.
-- Built-in static deobfuscator for rotated `_0x` string-array obfuscators and hex/numeric expressions.
-
-### Read-Only Space Oracle
-
-Resolves V8 internal Read-Only (`RO_SPACE`) and Root table string/symbol references automatically using built-in multi-version snapshot tables (`templates/ro-multi.json`, `templates/ro-v12.8.json`, `templates/ro-v12.4-x64.json`) or dynamically via the target Electron/Node binary (`--runtime`).
-
-## 🧩 Supported Versions
-
-| Runtime / Target | V8 Version | Pointer Size | Header / Opcode Table | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Electron 34.x** | **V8 13.2** | 4-byte (pointer compression) | `0x20` / `0xb3` (208 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 33.x** | **V8 13.0** | 4-byte (pointer compression) | `0x20` / `0xaf` (204 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 32.x** | **V8 12.8** | 4-byte (pointer compression) | `0x20` / `0xaf` (204 opcodes) | **Full support** — built-in `RO_SPACE` table + Oracle |
-| **Electron 31.x** | **V8 12.6** | 4-byte (pointer compression) | `0x20` / `0xaf` (204 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 30.x** | **V8 12.4** | 4-byte (pointer compression) | `0x20` / `0xae` (203 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 29.x** | **V8 12.2** | 4-byte (pointer compression) | `0x20` / `0xab` (200 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 28.x** | **V8 12.0** | 4-byte (pointer compression) | `0x20` / `0xaa` (199 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 27.x** | **V8 11.8** | 4-byte (pointer compression) | `0x20` / `0xaa` (199 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 25.x–26.x** | **V8 11.4–11.6** | 4-byte (pointer compression) | `0x18` / `0xaa` (199 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Electron 22.x–24.x** | **V8 10.8–11.2** | 4-byte (pointer compression) | `0x18` / `0xa9` (198 opcodes) | **Full support** — built-in `RO_SPACE` table |
-| **Node.js 20.x–22.x (x64)** | **V8 11.3–12.4** | 8-byte (uncompressed x64) | `0x20` / `0xae` (203 opcodes) | **Full support** — built-in x64 `RO_SPACE` table |
-
-> **Test Suite Included:** See [`test-jsc/`](test-jsc/) for 33 pre-compiled `.jsc` test binaries across Electron 22, 25, 27, 28, 29, 30, 31, 32, 33, 34 and Node.js 22 (classes/async, control-flow, and `_0x` obfuscated samples) plus `test-electron-app.asar`.
-
-## 📦 Installation
-
-Clone the repository:
+## 📦 Installation & Usage
 
 ```bash
 git clone https://github.com/8zav/jscdec.git
 cd jscdec
 ```
 
-The project runs on Node.js `>= 18`. No custom C++ V8 build, `depot_tools`, or `ninja` is required.
-
-## 🚀 Usage
-
-### 1. Decompile one `.jsc` file
-
-Print the result to the terminal:
-
-```bash
-node bin/jscdec.js path/to/file.jsc
-```
-
-Save the decompiled source to a file:
+### Decompile a single `.jsc` file
 
 ```bash
 node bin/jscdec.js path/to/file.jsc -o output.js
 ```
 
-### 2. Decompile a directory
+### Decompile a directory of `.jsc` files
 
 ```bash
 node bin/jscdec.js path/to/build-stage -o out/
 ```
 
-### 3. Resolve runtime-specific `RO_SPACE` constants
-
-`jscdec` includes pre-built Read-Only heap tables (`templates/ro-multi.json`, `templates/ro-v12.8.json`, `templates/ro-v12.4-x64.json`) covering Electron 22–34 and Node.js 20–22 x64 out of the box without an external binary.
-
-If custom or unindexed `RO_SPACE` constants are encountered, runtime discovery follows this order:
-
-1. Explicit `--runtime <path/to/electron.exe>` argument or the `JSC_RUNTIME` environment variable.
-2. `bin/electron.exe` or `tools/electron.exe` inside the repository.
-3. Auto-discovery from the target `.jsc` directory, walking parent folders for `node_modules/electron/dist/electron.exe` or a packaged Electron executable beside `icudtl.dat` / `chrome_100_percent.pak`.
-4. Local `node_modules/electron/dist/electron.exe`, if Electron 32 is installed.
-
-Example:
+### Custom runtime for unindexed `RO_SPACE` constants (optional)
 
 ```bash
 node bin/jscdec.js path/to/build-stage -o out/ --runtime "path/to/electron.exe"
 ```
-
-## 🧪 Example Output
-
-Example of the kind of readable JavaScript structure the decompiler can reconstruct:
-
-```js
-const os = require("os");
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-const { machineIdSync } = require("node-machine-id");
-const { app, BrowserWindow, ipcMain } = require("electron");
-
-function licenseFilePath() {
-  return path.join(app.getPath("userData"), "license.json");
-}
-
-async function callAuth(backendUrl, key, hwid, isHeartbeat = false) {
-  try {
-    return (await axios.post(`${backendUrl}/api/auth`, {
-      licenseKey: key,
-      hwid,
-      hostname: os.hostname(),
-      heartbeat: isHeartbeat
-    }, {
-      timeout: 10000
-    })).data;
-  } catch (err) {
-    if (err.response && err.response.data) {
-      return err.response.data;
-    }
-    return {
-      ok: false,
-      reason: "network_error"
-    };
-  }
-}
-```
-
-## 🧹 Post-Processing & AI Code Cleanup
-
-V8 compilation discards comments, formatting, and local stack variable names that are not captured (unless they are retained through closures or stored as object/module properties).
-
-`jscdec` automatically recovers local and parameter names through heuristic type/call inference and statically resolves rotated `_0x...` string-array obfuscators. Complex functions may still contain generic register names such as `v0`, `v1`, or `a0`.
-
-For a more readable result, you can pass the generated `.js` file to an LLM and ask it to improve names and formatting **without changing runtime behavior**. This is an optional post-processing step, not part of the decompiler itself.
-
-## 🔐 Security and Runtime Verification
-
-The original project documentation states that an official, unmodified **Electron 32** executable is bundled at `tools/electron.exe` through Git LFS.
-
-- **File:** `tools/electron.exe`
-- **SHA-256:** `217C7ABC77AAA868B9423FF3E6E8F40F62633CCC4121786FAC64E481AEF3429D`
-
-Verify the file locally in PowerShell:
-
-```powershell
-Get-FileHash tools\electron.exe -Algorithm SHA256
-```
-
-If you do not want to use the bundled executable, you can:
-
-1. Allow `jscdec` to use its built-in multi-version `RO_SPACE` tables (`templates/ro-multi.json`, `templates/ro-v12.8.json`, `templates/ro-v12.4-x64.json`).
-2. Provide your own binary with `--runtime "path/to/electron.exe"`.
-3. Install Electron 32 with `npm i -D electron@32`.
 
 ## 📁 Project Structure
 
 ```text
 ├── bin/
 │   └── jscdec.js              # CLI entry point (single file or batch directory)
+├── doc/
+│   ├── example.md             # Decompilation example & recovery pipeline overview
+│   └── versions.md            # Supported V8 / Electron / Node.js version matrix
 ├── src/
 │   ├── heap.js                # V8 SerializedCodeData deserializer (4-byte & 8-byte snapshots)
 │   ├── model.js               # Heap object decoder (SharedFunctionInfo, ScopeInfo, BytecodeArray)
@@ -226,24 +85,17 @@ If you do not want to use the bundled executable, you can:
 │   ├── decompile.js           # Symbolic execution engine & function/class builder
 │   ├── decompile-ops.js       # Per-opcode symbolic state & accumulator transitions
 │   ├── decompile-flow.js      # CFG structuring (loops, switch, try/catch/finally, ternary, &&/||)
-│   ├── post.js                # AST optimization, _0x deobfuscator, loop shaping & variable renaming
+│   ├── post.js                # AST optimization, _0x deobfuscator, loop shaping & dataflow renaming
 │   ├── ast.js                 # JavaScript AST pretty-printer
 │   └── index.js               # Public API (decompileFile)
-├── templates/
-│   ├── ro-multi.json          # Multi-version RO_SPACE & Root tables (Electron 22–34)
-│   ├── ro-v12.8.json          # Electron 32 (V8 12.8) RO_SPACE & Root table
-│   ├── ro-v12.4-x64.json      # Node.js 20–22 x64 (V8 12.4) RO_SPACE & Root table
-│   └── oracle-v12.8.jsc       # Template code cache for live RO_SPACE oracle resolution
-├── test-jsc/                  # 33 test .jsc files (Electron 22–34 & Node 22) + test-electron-app.asar
-└── tools/
-    ├── electron.exe           # Bundled Electron 32 runtime for RO_SPACE oracle
-    ├── dump.js                # Disassembly & heap inspection utility
-    └── gen-opcodes.js         # Opcode table generator for other V8 builds
+├── templates/                 # Pre-built multi-version RO_SPACE & Root tables
+├── test-jsc/                  # 33 test .jsc binaries (Electron 22–34 & Node 22) + test-electron-app.asar
+└── tools/                     # Disassembly, opcode generator & bundled Electron 32 runtime
 ```
 
 ---
 
 <div align="center">
   <p><strong>jscdec</strong> · V8 / Bytenode / Electron bytecode decompiler</p>
-  <p><a href="https://jsc-decompiler.vercel.app">Try the web decompiler</a> · <a href="https://github.com/8zav/jscdec">GitHub repository</a></p>
+  <p><a href="https://jsc-decompiler.vercel.app">Web Decompiler</a> · <a href="doc/versions.md">Supported Versions</a> · <a href="doc/example.md">Example Output</a></p>
 </div>
